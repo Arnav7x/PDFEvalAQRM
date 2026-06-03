@@ -1,74 +1,35 @@
-# React + TypeScript + Vite
+# PDFEval
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+PDFEval is an assisted question region mapping and grading portal designed to speed up online evaluation of scanned student papers. 
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Minimalist Black Theme**: Clean, high-contrast monochrome design with sharp borders.
+- **Landing Portal**: Simple file upload page with support for drag & drop and student naming.
+- **5% Buffer Box Strategy**: Automatically adds a 5% padding buffer to drawn question regions to ensure student answers are safely captured even under minor print/scan scaling issues.
+- **Smart Aspect Ratio Validation**: Automatically detects the aspect ratio of loaded student PDFs and warns the evaluator with a toast message if it deviates from the template by more than 2%.
+- **Page Alignment Offsets**: Easy-to-use sliders to tune horizontal shift (X), vertical shift (Y), and scale zoom on misaligned student scans.
+- **Assisted Grading**: Click a question to automatically scroll and center directly on the corresponding region. Save a score to auto-advance to the next question.
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React (JavaScript) + Vite
+- **PDF Rendering**: PDF.js (renders documents directly onto HTML5 `<canvas>` elements)
+- **State Storage**: persistent storage in the browser's `localStorage`
 
-## Expanding the ESLint configuration
+## Setup & Running
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Install dependencies:
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Start the Vite development server:
+```bash
+npm run dev
 ```
-# PDFEvalAQRM
+
+Build the production assets:
+```bash
+npm run build
+```
