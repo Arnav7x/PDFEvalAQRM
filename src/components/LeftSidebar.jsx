@@ -77,12 +77,12 @@ export const LeftSidebar = () => {
         overflowY: 'auto',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-glass)',
-        background: 'rgba(15, 23, 42, 0.5)',
+        background: 'var(--bg-panel)',
       }}
     >
       {/* Brand Logo Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '12px' }}>
-        <CheckSquare size={24} style={{ color: 'var(--accent)' }} />
+        <CheckSquare size={24} style={{ color: 'var(--text-primary)' }} />
         <div>
           <h1 style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '-0.5px' }}>PDFEVal</h1>
           <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', marginTop: '-3px' }}>Assisted Region Tagging</span>
@@ -281,7 +281,7 @@ export const LeftSidebar = () => {
                       deletePaper(paper.id);
                     }}
                     className="btn-ghost text-red"
-                    style={{ padding: '4px', borderRadius: '4px' }}
+                    style={{ padding: '4px', borderRadius: 'var(--radius-sm)' }}
                   >
                     <Trash2 size={12} style={{ color: 'var(--rose)' }} />
                   </button>
@@ -290,6 +290,20 @@ export const LeftSidebar = () => {
             })
           )}
         </div>
+      </div>
+      
+      {/* Back to Portal button */}
+      <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-glass)', paddingTop: '12px' }}>
+        <button 
+          onClick={() => {
+            setSelectedPaper(null);
+            setSelectedTemplate(null);
+          }} 
+          className="btn-secondary" 
+          style={{ width: '100%', justifyContent: 'center', fontSize: '11px', padding: '6px', borderRadius: 'var(--radius-sm)' }}
+        >
+          Exit to Landing Portal
+        </button>
       </div>
     </div>
   );

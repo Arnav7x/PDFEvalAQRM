@@ -236,7 +236,7 @@ export const PdfViewer = () => {
           height: `${1050 * zoom}px`,
           margin: '0 auto 24px auto',
           boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-          borderRadius: '4px',
+          borderRadius: 'var(--radius-sm)',
           overflow: 'hidden',
           backgroundColor: '#ffffff',
           transition: 'width 0.2s ease, height 0.2s ease',
@@ -280,8 +280,9 @@ export const PdfViewer = () => {
             style={{
               fontSize: '12px',
               backgroundColor: 'var(--bg-surface)',
+              border: '1px solid var(--border-glass)',
               padding: '2px 8px',
-              borderRadius: '99px',
+              borderRadius: 'var(--radius-sm)',
               color: 'var(--text-secondary)',
             }}
           >
@@ -336,7 +337,7 @@ export const PdfViewer = () => {
           flex: 1,
           overflowY: 'auto',
           padding: '24px 16px',
-          background: 'rgba(5, 7, 12, 0.9)',
+          background: 'var(--bg-primary)',
           borderRadius: '0 0 var(--radius-md) var(--radius-md)',
           border: '1px solid var(--border-glass)',
           borderTop: 'none',

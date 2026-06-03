@@ -73,22 +73,12 @@ export const RightSidebar = () => {
           padding: '16px',
           gap: '16px',
           overflowY: 'auto',
-          background: 'rgba(15, 23, 42, 0.5)',
+          background: 'var(--bg-panel)',
         }}
       >
         <div>
           <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'white' }}>{selectedTemplate.name}</h2>
           <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Template Mapping Mode</span>
-        </div>
-
-        <div className="glass-panel" style={{ padding: '12px', background: 'rgba(99, 102, 241, 0.05)', border: '1px solid var(--accent-light)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--accent-hover)' }}>
-            <ShieldAlert size={14} />
-            How to Tag Regions:
-          </div>
-          <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>
-            Scroll the document in the center pane and **drag a rectangle** over the answer area for each question. Give it a label (e.g. Q1) in the popup.
-          </p>
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -98,7 +88,7 @@ export const RightSidebar = () => {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto', flex: 1 }}>
             {selectedTemplate.regions.length === 0 ? (
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '24px 0' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '24px 0', border: '1px dashed var(--border-glass)' }}>
                 No regions drawn yet. Click and drag on the document.
               </div>
             ) : (
@@ -204,7 +194,7 @@ export const RightSidebar = () => {
         padding: '16px',
         gap: '16px',
         overflowY: 'auto',
-        background: 'rgba(15, 23, 42, 0.5)',
+        background: 'var(--bg-panel)',
       }}
     >
       {/* Paper Header */}
@@ -218,8 +208,8 @@ export const RightSidebar = () => {
         className="glass-panel"
         style={{
           padding: '12px 16px',
-          background: 'linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(16,185,129,0.05) 100%)',
-          border: '1px solid var(--accent-light)',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-glass)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -241,8 +231,8 @@ export const RightSidebar = () => {
           className="glass-panel"
           style={{
             padding: '16px',
-            background: 'rgba(245,158,11,0.05)',
-            border: '1px solid rgba(245,158,11,0.15)',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-glass)',
             display: 'flex',
             flexDirection: 'column',
             gap: '10px',
@@ -268,14 +258,14 @@ export const RightSidebar = () => {
       ) : (
         <>
           {/* Tab Selection */}
-          <div style={{ display: 'flex', gap: '2px', background: 'rgba(0,0,0,0.2)', padding: '2px', borderRadius: 'var(--radius-sm)' }}>
+          <div style={{ display: 'flex', gap: '2px', background: 'rgba(255,255,255,0.03)', padding: '2px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-glass)' }}>
             <button
               onClick={() => setActiveTab('questions')}
               style={{
                 flex: 1,
                 padding: '6px',
                 fontSize: '12px',
-                borderRadius: '6px',
+                borderRadius: 'var(--radius-sm)',
                 background: activeTab === 'questions' ? 'var(--bg-surface)' : 'transparent',
                 color: activeTab === 'questions' ? 'white' : 'var(--text-secondary)',
               }}
@@ -288,7 +278,7 @@ export const RightSidebar = () => {
                 flex: 1,
                 padding: '6px',
                 fontSize: '12px',
-                borderRadius: '6px',
+                borderRadius: 'var(--radius-sm)',
                 background: activeTab === 'adjustments' ? 'var(--bg-surface)' : 'transparent',
                 color: activeTab === 'adjustments' ? 'white' : 'var(--text-secondary)',
               }}
@@ -411,11 +401,11 @@ export const RightSidebar = () => {
                         </div>
                         <div>
                           {isGraded ? (
-                            <span style={{ fontSize: '12px', color: 'var(--emerald)', fontWeight: 'bold', backgroundColor: 'var(--emerald-light)', padding: '2px 6px', borderRadius: '4px' }}>
+                            <span style={{ fontSize: '12px', color: 'var(--emerald)', fontWeight: 'bold', backgroundColor: 'var(--emerald-light)', padding: '2px 6px', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
                               {grade.score} pts
                             </span>
                           ) : (
-                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', border: '1px dotted var(--border-glass)', padding: '2px 6px', borderRadius: '4px' }}>
+                            <span style={{ fontSize: '11px', color: 'var(--text-muted)', border: '1px dotted var(--border-glass)', padding: '2px 6px', borderRadius: 'var(--radius-sm)' }}>
                               Ungraded
                             </span>
                           )}
@@ -429,15 +419,15 @@ export const RightSidebar = () => {
               {activeGradeQ ? (
                 <form
                   onSubmit={handleSaveGradeSubmit}
-                  className="glass-panel highlight-ring"
+                  className="glass-panel"
                   style={{
                     padding: '16px',
-                    background: 'rgba(255,255,255,0.02)',
+                    background: 'var(--bg-surface)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '12px',
                     border: '1px solid var(--accent)',
-                    boxShadow: '0 0 15px rgba(99, 102, 241, 0.1)',
+                    boxShadow: '0 4px 12px rgba(255, 255, 255, 0.05)',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
