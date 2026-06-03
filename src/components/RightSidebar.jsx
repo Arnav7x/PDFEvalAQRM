@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { ChevronRight, ShieldAlert, Check, GraduationCap } from 'lucide-react';
 
-export const RightSidebar: React.FC = () => {
+export const RightSidebar = () => {
   const {
     selectedTemplate,
     selectedPaper,
@@ -16,10 +16,10 @@ export const RightSidebar: React.FC = () => {
     currentPage
   } = useWorkspace();
 
-  const [activeTab, setActiveTab] = useState<'questions' | 'adjustments'>('questions');
-  const [activeGradeQ, setActiveGradeQ] = useState<string | null>(null);
-  const [score, setScore] = useState<string>('');
-  const [feedback, setFeedback] = useState<string>('');
+  const [activeTab, setActiveTab] = useState('questions');
+  const [activeGradeQ, setActiveGradeQ] = useState(null);
+  const [score, setScore] = useState('');
+  const [feedback, setFeedback] = useState('');
 
   // Auto-fill grading input when question selection changes
   useEffect(() => {
@@ -156,12 +156,12 @@ export const RightSidebar: React.FC = () => {
   }
 
   // --- STUDENT PAPER GRADING SIDEBAR ---
-  const handleApplyTemplateSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleApplyTemplateSelect = (e) => {
     if (!e.target.value) return;
     applyTemplate(e.target.value);
   };
 
-  const handleSaveGradeSubmit = (e: React.FormEvent) => {
+  const handleSaveGradeSubmit = (e) => {
     e.preventDefault();
     if (!selectedPaper || !activeGradeQ) return;
     

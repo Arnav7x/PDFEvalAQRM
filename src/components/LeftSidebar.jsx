@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { FileText, Plus, FileSpreadsheet, Trash2, Upload, HelpCircle, CheckSquare } from 'lucide-react';
 
-export const LeftSidebar: React.FC = () => {
+export const LeftSidebar = () => {
   const {
     templates,
     selectedTemplate,
@@ -23,7 +23,7 @@ export const LeftSidebar: React.FC = () => {
   
   const [studentName, setStudentName] = useState('');
 
-  const handleCreateTemplateSubmit = (e: React.FormEvent) => {
+  const handleCreateTemplateSubmit = (e) => {
     e.preventDefault();
     if (!newTplName.trim()) return;
     createTemplate(newTplName.trim(), newTplPages);
@@ -31,7 +31,7 @@ export const LeftSidebar: React.FC = () => {
     setShowNewTplModal(false);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 

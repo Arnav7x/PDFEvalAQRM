@@ -1,54 +1,30 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { Region, Template, StudentPaper, PageOffset } from '../types/mapping';
 import { getTemplates, saveTemplate as dbSaveTemplate, deleteTemplate as dbDeleteTemplate, getPapers, savePaper as dbSavePaper, deletePaper as dbDeletePaper } from '../utils/storage';
 
-interface WorkspaceContextType {
-  mode: 'mapping' | 'grading';
-  setMode: (mode: 'mapping' | 'grading') => void;
-  
-  templates: Template[];
-  selectedTemplate: Template | null;
-  setSelectedTemplate: (template: Template | null) => void;
-  createTemplate: (name: string, pageCount: number) => Template;
-  updateTemplate: (template: Template) => void;
-  deleteTemplate: (id: string) => void;
-  
-  papers: StudentPaper[];
-  selectedPaper: StudentPaper | null;
-  setSelectedPaper: (paper: StudentPaper | null) => void;
-  createPaper: (studentName: string, fileName: string, fileSize: string, pdfUrl: string) => StudentPaper;
-  updatePaper: (paper: StudentPaper) => void;
-  deletePaper: (id: string) => void;
-  
-  currentPage: number;
-  setCurrentPage: (page: number) => void;
-  zoom: number;
-  setZoom: (zoom: number) => void;
-  
-  highlightedRegionId: string | null;
-  setHighlightedRegionId: (id: string | null) => void;
-  
-  // High-level workspace actions
-  addRegion: (region: Omit<Region, 'id'>) => void;
-  removeRegion: (id: string) => void;
-  applyTemplate: (templateId: string) => void;
-  updateOffset: (page: number, offset: Partial<PageOffset>) => void;
-  saveGrade: (questionNumber: string, score: number, feedback: string) => void;
-}
+const WorkspaceContext = createContext(undefined);
 
-const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
+export const WorkspaceProvider = ({ children }) => {
+  const [mode, setMode] = useState('mapping');
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  
+  const [papers, setPapers] = useState([]);
+  const [selectedPaper, setSelectedPaper] = useState(null);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [zoom, setZoom] = useState(1.0);
+  const [highlightedRegionId, setHighlightedRegionId] = useState(null);
 
-export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [mode, setMode] = useState<'mapping' | 'grading'>('mapping');
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
-  
-  const [papers, setPapers] = useState<StudentPaper[]>([]);
-  const [selectedPaper, setSelectedPaper] = useState<StudentPaper | null>(null);
-  
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [zoom, setZoom] = useState<number>(1.0);
-  const [highlightedRegionId, setHighlightedRegionId] = useState<string | null>(null);
+  // Toast notification state
+  const [toast, setToast] = useState(null);
+
+  const triggerToast = (message, type = 'warning') => {
+    setToast({ message, type, id: Date.now() });
+  };
+
+  const clearToast = () => {
+    setToast(null);
+  };
 
   // Load from Storage on mount
   useEffect(() => {
@@ -57,7 +33,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   // Sync state back to storage helper
-  const handleUpdateTemplate = (updated: Template) => {
+  const handleUpdateTemplate = (updated) => {
     dbSaveTemplate(updated);
     setTemplates(getTemplates());
     if (selectedTemplate?.id === updated.id) {
@@ -65,7 +41,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const handleDeleteTemplate = (id: string) => {
+  const handleDeleteTemplate = (id) => {
     dbDeleteTemplate(id);
     setTemplates(getTemplates());
     if (selectedTemplate?.id === id) {
@@ -73,7 +49,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const handleUpdatePaper = (updated: StudentPaper) => {
+  const handleUpdatePaper = (updated) => {
     dbSavePaper(updated);
     setPapers(getPapers());
     if (selectedPaper?.id === updated.id) {
@@ -81,7 +57,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const handleDeletePaper = (id: string) => {
+  const handleDeletePaper = (id) => {
     dbDeletePaper(id);
     setPapers(getPapers());
     if (selectedPaper?.id === id) {
@@ -89,11 +65,12 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const createTemplate = (name: string, pageCount: number): Template => {
-    const newTpl: Template = {
+  const createTemplate = (name, pageCount) => {
+    const newTpl = {
       id: `tpl-${Date.now()}`,
       name,
       pageCount,
+      aspectRatio: 0.7619, // Default to mock paper aspect ratio (800x1050)
       regions: [],
       createdAt: new Date().toISOString()
     };
@@ -106,13 +83,14 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return newTpl;
   };
 
-  const createPaper = (studentName: string, fileName: string, fileSize: string, pdfUrl: string): StudentPaper => {
-    const newPaper: StudentPaper = {
+  const createPaper = (studentName, fileName, fileSize, pdfUrl) => {
+    const newPaper = {
       id: `paper-${Date.now()}`,
       studentName,
       fileName,
       fileSize,
       pdfUrl,
+      aspectRatio: 0.7619, // Default, will be recalculated once PDF loads
       regions: [],
       offsets: {},
       grades: {},
@@ -127,8 +105,8 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return newPaper;
   };
 
-  const addRegion = (regionData: Omit<Region, 'id'>) => {
-    const newRegion: Region = {
+  const addRegion = (regionData) => {
+    const newRegion = {
       ...regionData,
       id: `region-${Date.now()}`
     };
@@ -148,7 +126,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const removeRegion = (id: string) => {
+  const removeRegion = (id) => {
     if (selectedTemplate) {
       const updated = {
         ...selectedTemplate,
@@ -164,7 +142,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const applyTemplate = (templateId: string) => {
+  const applyTemplate = (templateId) => {
     if (!selectedPaper) return;
     const tpl = templates.find(t => t.id === templateId);
     if (!tpl) return;
@@ -176,21 +154,30 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }));
 
     // Initialize page offsets for the applied template
-    const offsets: { [page: number]: PageOffset } = {};
+    const offsets = {};
     for (let p = 1; p <= tpl.pageCount; p++) {
       offsets[p] = { x: 0, y: 0, scale: 1.0 };
     }
 
-    const updated: StudentPaper = {
+    const updated = {
       ...selectedPaper,
       templateId,
       regions: copiedRegions,
       offsets
     };
+
+    // Calculate aspect ratio difference and show smart warning toast
+    if (tpl.aspectRatio && selectedPaper.aspectRatio) {
+      const diff = Math.abs(selectedPaper.aspectRatio - tpl.aspectRatio) / tpl.aspectRatio;
+      if (diff > 0.02) {
+        triggerToast(`Warning: The student paper's aspect ratio differs from the template by ${(diff * 100).toFixed(1)}%. Please double-check and adjust regions!`);
+      }
+    }
+
     handleUpdatePaper(updated);
   };
 
-  const updateOffset = (page: number, offsetUpdate: Partial<PageOffset>) => {
+  const updateOffset = (page, offsetUpdate) => {
     if (!selectedPaper) return;
     const currentOffset = selectedPaper.offsets[page] || { x: 0, y: 0, scale: 1.0 };
     const updatedOffsets = {
@@ -198,21 +185,20 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       [page]: { ...currentOffset, ...offsetUpdate }
     };
     
-    // In actual implementation, we might want to let the user shift the coordinates or shift the render offset
-    const updated: StudentPaper = {
+    const updated = {
       ...selectedPaper,
       offsets: updatedOffsets
     };
     handleUpdatePaper(updated);
   };
 
-  const saveGrade = (questionNumber: string, score: number, feedback: string) => {
+  const saveGrade = (questionNumber, score, feedback) => {
     if (!selectedPaper) return;
     const updatedGrades = {
       ...selectedPaper.grades,
       [questionNumber]: { score, feedback }
     };
-    const updated: StudentPaper = {
+    const updated = {
       ...selectedPaper,
       grades: updatedGrades
     };
@@ -246,7 +232,10 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         removeRegion,
         applyTemplate,
         updateOffset,
-        saveGrade
+        saveGrade,
+        toast,
+        triggerToast,
+        clearToast
       }}
     >
       {children}

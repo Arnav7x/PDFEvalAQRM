@@ -2,11 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { X, Check } from 'lucide-react';
 
-interface MappingOverlayProps {
-  pageNumber: number;
-}
-
-export const MappingOverlay: React.FC<MappingOverlayProps> = ({ pageNumber }) => {
+export const MappingOverlay = ({ pageNumber }) => {
   const {
     selectedTemplate,
     selectedPaper,
@@ -17,18 +13,11 @@ export const MappingOverlay: React.FC<MappingOverlayProps> = ({ pageNumber }) =>
     mode
   } = useWorkspace();
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
-  const [tempBox, setTempBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
-  const [showNamingModal, setShowNamingModal] = useState<{
-    top: number;
-    left: number;
-    pctX: number;
-    pctY: number;
-    pctW: number;
-    pctH: number;
-  } | null>(null);
+  const [dragStart, setDragStart] = useState(null);
+  const [tempBox, setTempBox] = useState(null);
+  const [showNamingModal, setShowNamingModal] = useState(null);
   const [questionName, setQuestionName] = useState('');
 
   // Fetch active regions for this page
@@ -38,7 +27,7 @@ export const MappingOverlay: React.FC<MappingOverlayProps> = ({ pageNumber }) =>
     ? selectedPaper.regions.filter(r => r.page === pageNumber)
     : [];
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseDown = (e) => {
     // If modal is showing, clicking outside should dismiss it
     if (showNamingModal) {
       setShowNamingModal(null);
@@ -57,7 +46,7 @@ export const MappingOverlay: React.FC<MappingOverlayProps> = ({ pageNumber }) =>
     setTempBox({ x, y, w: 0, h: 0 });
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = (e) => {
     if (!isDrawing || !dragStart || !tempBox || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     
@@ -113,13 +102,29 @@ export const MappingOverlay: React.FC<MappingOverlayProps> = ({ pageNumber }) =>
   const handleSaveRegion = () => {
     if (!showNamingModal || !questionName.trim()) return;
 
+    // Apply the "Buffer Box" strategy: add 5% padding to width and height and center it
+    const originalWidth = showNamingModal.pctW;
+    const originalHeight = showNamingModal.pctH;
+    const originalX = showNamingModal.pctX;
+    const originalY = showNamingModal.pctY;
+
+    const bufferedWidth = Math.min(100, originalWidth + 5);
+    const bufferedHeight = Math.min(100, originalHeight + 5);
+    
+    // Shift X and Y to keep the box centered
+    const changeX = bufferedWidth - originalWidth;
+    const changeY = bufferedHeight - originalHeight;
+
+    const bufferedX = Math.max(0, originalX - (changeX / 2));
+    const bufferedY = Math.max(0, originalY - (changeY / 2));
+
     addRegion({
       questionNumber: questionName.trim(),
       page: pageNumber,
-      x: showNamingModal.pctX,
-      y: showNamingModal.pctY,
-      width: showNamingModal.pctW,
-      height: showNamingModal.pctH
+      x: bufferedX,
+      y: bufferedY,
+      width: bufferedWidth,
+      height: bufferedHeight
     });
 
     setShowNamingModal(null);
@@ -134,7 +139,7 @@ export const MappingOverlay: React.FC<MappingOverlayProps> = ({ pageNumber }) =>
 
   // Listen for escape key to cancel naming modal
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         handleCancelRegion();
       }

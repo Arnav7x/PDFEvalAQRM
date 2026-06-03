@@ -5,14 +5,14 @@ import { MappingOverlay } from './MappingOverlay';
 import { ZoomIn, ZoomOut, RotateCcw, AlertCircle } from 'lucide-react';
 
 // Setup PDF.js worker
-// @ts-ignore
 import * as pdfjs from 'pdfjs-dist';
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-export const PdfViewer: React.FC = () => {
+export const PdfViewer = () => {
   const {
     selectedTemplate,
     selectedPaper,
+    updatePaper,
     currentPage,
     setCurrentPage,
     zoom,
@@ -20,10 +20,10 @@ export const PdfViewer: React.FC = () => {
     highlightedRegionId
   } = useWorkspace();
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [numPages, setNumPages] = useState<number>(3);
-  const [pdfDoc, setPdfDoc] = useState<any>(null);
-  const [pdfLoadingError, setPdfLoadingError] = useState<string | null>(null);
+  const containerRef = useRef(null);
+  const [numPages, setNumPages] = useState(3);
+  const [pdfDoc, setPdfDoc] = useState(null);
+  const [pdfLoadingError, setPdfLoadingError] = useState(null);
 
   // Set number of pages depending on active template or paper
   useEffect(() => {
@@ -36,16 +36,37 @@ export const PdfViewer: React.FC = () => {
         setNumPages(3);
         setPdfDoc(null);
         setPdfLoadingError(null);
+        if (selectedPaper.aspectRatio !== 0.7619) {
+          const updatedPaper = {
+            ...selectedPaper,
+            aspectRatio: 0.7619
+          };
+          updatePaper(updatedPaper);
+        }
       } else {
         // Load real PDF
         setPdfLoadingError(null);
         const loadingTask = pdfjs.getDocument({ url: selectedPaper.pdfUrl });
         loadingTask.promise.then(
-          (pdf: any) => {
+          (pdf) => {
             setPdfDoc(pdf);
             setNumPages(pdf.numPages);
+            
+            // Calculate first page's aspect ratio
+            pdf.getPage(1).then((page) => {
+              const viewport = page.getViewport({ scale: 1.0 });
+              const paperAspectRatio = viewport.width / viewport.height;
+              
+              if (selectedPaper.aspectRatio !== paperAspectRatio) {
+                const updatedPaper = {
+                  ...selectedPaper,
+                  aspectRatio: paperAspectRatio
+                };
+                updatePaper(updatedPaper);
+              }
+            });
           },
-          (err: any) => {
+          (err) => {
             console.error('Error loading PDF:', err);
             setPdfLoadingError('Failed to load PDF. Rendering default exam layout instead.');
             setPdfDoc(null);
@@ -120,9 +141,9 @@ export const PdfViewer: React.FC = () => {
   };
 
   // Render function for individual page canvases
-  const PageCanvas: React.FC<{ pageNum: number }> = ({ pageNum }) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const renderTaskRef = useRef<any>(null);
+  const PageCanvas = ({ pageNum }) => {
+    const canvasRef = useRef(null);
+    const renderTaskRef = useRef(null);
 
     useEffect(() => {
       const canvas = canvasRef.current;
@@ -136,7 +157,7 @@ export const PdfViewer: React.FC = () => {
 
       // Check if we render using pdfDoc or mockup renderer
       if (pdfDoc && !pdfLoadingError) {
-        pdfDoc.getPage(pageNum).then((page: any) => {
+        pdfDoc.getPage(pageNum).then((page) => {
           const ctx = canvas.getContext('2d');
           if (!ctx) return;
 
@@ -189,7 +210,7 @@ export const PdfViewer: React.FC = () => {
               ctx.restore();
               renderTaskRef.current = null;
             },
-            (err: any) => {
+            (err) => {
               ctx.restore();
               if (err.name !== 'RenderingCancelledException') {
                 console.error('Error rendering page:', err);

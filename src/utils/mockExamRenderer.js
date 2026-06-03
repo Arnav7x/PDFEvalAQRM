@@ -1,16 +1,4 @@
-export interface MockExamPage {
-  pageNumber: number;
-  title: string;
-  elements: Array<{
-    type: 'text' | 'handwriting' | 'drawing';
-    x: number; // percentage of width
-    y: number; // percentage of height
-    content: string;
-    style?: string;
-  }>;
-}
-
-export const MOCK_EXAM_PAGES: MockExamPage[] = [
+export const MOCK_EXAM_PAGES = [
   {
     pageNumber: 1,
     title: 'Page 1: Basic Algebra',
@@ -82,9 +70,9 @@ export const MOCK_EXAM_PAGES: MockExamPage[] = [
 ];
 
 export const renderMockPage = (
-  canvas: HTMLCanvasElement,
-  pageNumber: number,
-  offset: { x: number; y: number; scale: number } = { x: 0, y: 0, scale: 1.0 }
+  canvas,
+  pageNumber,
+  offset = { x: 0, y: 0, scale: 1.0 }
 ) => {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;

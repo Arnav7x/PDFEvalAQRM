@@ -1,14 +1,13 @@
-import type { Template, StudentPaper } from '../types/mapping';
-
 const TEMPLATES_KEY = 'pdf_eval_templates';
 const PAPERS_KEY = 'pdf_eval_papers';
 
 // Seed initial templates if empty
-const INITIAL_TEMPLATES: Template[] = [
+const INITIAL_TEMPLATES = [
   {
     id: 'tpl-math-101',
     name: 'Grade 10 Math Midterm Template',
     pageCount: 3,
+    aspectRatio: 0.7619, // 800x1050 base size
     createdAt: new Date().toISOString(),
     regions: [
       { id: 'r1', questionNumber: 'Q1', page: 1, x: 10, y: 15, width: 80, height: 25 },
@@ -23,6 +22,7 @@ const INITIAL_TEMPLATES: Template[] = [
     id: 'tpl-physics-12',
     name: 'Physics Unit 3 Quiz Template',
     pageCount: 2,
+    aspectRatio: 0.7619,
     createdAt: new Date().toISOString(),
     regions: [
       { id: 'rp1', questionNumber: 'Q1 (Multiple Choice)', page: 1, x: 8, y: 12, width: 84, height: 30 },
@@ -32,7 +32,7 @@ const INITIAL_TEMPLATES: Template[] = [
   }
 ];
 
-export const getTemplates = (): Template[] => {
+export const getTemplates = () => {
   const data = localStorage.getItem(TEMPLATES_KEY);
   if (!data) {
     localStorage.setItem(TEMPLATES_KEY, JSON.stringify(INITIAL_TEMPLATES));
@@ -46,7 +46,7 @@ export const getTemplates = (): Template[] => {
   }
 };
 
-export const saveTemplate = (template: Template): void => {
+export const saveTemplate = (template) => {
   const templates = getTemplates();
   const index = templates.findIndex(t => t.id === template.id);
   if (index >= 0) {
@@ -57,13 +57,13 @@ export const saveTemplate = (template: Template): void => {
   localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
 };
 
-export const deleteTemplate = (id: string): void => {
+export const deleteTemplate = (id) => {
   const templates = getTemplates();
   const filtered = templates.filter(t => t.id !== id);
   localStorage.setItem(TEMPLATES_KEY, JSON.stringify(filtered));
 };
 
-export const getPapers = (): StudentPaper[] => {
+export const getPapers = () => {
   const data = localStorage.getItem(PAPERS_KEY);
   if (!data) {
     return [];
@@ -76,7 +76,7 @@ export const getPapers = (): StudentPaper[] => {
   }
 };
 
-export const savePaper = (paper: StudentPaper): void => {
+export const savePaper = (paper) => {
   const papers = getPapers();
   const index = papers.findIndex(p => p.id === paper.id);
   if (index >= 0) {
@@ -87,7 +87,7 @@ export const savePaper = (paper: StudentPaper): void => {
   localStorage.setItem(PAPERS_KEY, JSON.stringify(papers));
 };
 
-export const deletePaper = (id: string): void => {
+export const deletePaper = (id) => {
   const papers = getPapers();
   const filtered = papers.filter(p => p.id !== id);
   localStorage.setItem(PAPERS_KEY, JSON.stringify(filtered));
