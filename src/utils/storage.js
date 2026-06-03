@@ -32,6 +32,7 @@ const INITIAL_TEMPLATES = [
   }
 ];
 
+// Fallback to localStorage if API is unavailable
 export const getTemplates = () => {
   const data = localStorage.getItem(TEMPLATES_KEY);
   if (!data) {

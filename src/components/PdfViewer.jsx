@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { renderMockPage } from '../utils/mockExamRenderer';
-import { MappingOverlay } from './MappingOverlay';
+import { SVGMappingOverlay as MappingOverlay } from './SVGMappingOverlay';
 import { ZoomIn, ZoomOut, RotateCcw, AlertCircle } from 'lucide-react';
 
 // Setup PDF.js worker
 import * as pdfjs from 'pdfjs-dist';
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export const PdfViewer = () => {
   const {
@@ -87,9 +88,9 @@ export const PdfViewer = () => {
     const activeRegions = selectedTemplate
       ? selectedTemplate.regions
       : selectedPaper
-      ? selectedPaper.regions
-      : [];
-
+        ? (selectedPaper.regions || [])
+        : [];
+    
     const region = activeRegions.find(r => r.id === highlightedRegionId);
     if (!region) return;
 
@@ -178,7 +179,7 @@ export const PdfViewer = () => {
           // Apply page offsets if applicable (for papers with template shift adjustments)
           ctx.save();
           if (selectedPaper) {
-            const offset = selectedPaper.offsets[pageNum] || { x: 0, y: 0, scale: 1.0 };
+            const offset = selectedPaper.offsets?.[pageNum] || { x: 0, y: 0, scale: 1.0 };
             const tx = (offset.x / 100) * canvas.width;
             const ty = (offset.y / 100) * canvas.height;
             ctx.translate(tx, ty);
@@ -220,10 +221,10 @@ export const PdfViewer = () => {
         });
       } else {
         // Draw Mock Sheet
-        const offset = selectedPaper?.offsets[pageNum] || { x: 0, y: 0, scale: 1.0 };
+        const offset = selectedPaper?.offsets?.[pageNum] || { x: 0, y: 0, scale: 1.0 };
         renderMockPage(canvas, pageNum, offset);
       }
-    }, [pdfDoc, pageNum, zoom, selectedPaper?.offsets[pageNum], pdfLoadingError]);
+    }, [pdfDoc, pageNum, zoom, selectedPaper?.offsets?.[pageNum], pdfLoadingError]);
 
     return (
       <div
