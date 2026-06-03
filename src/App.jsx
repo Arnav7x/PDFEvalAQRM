@@ -94,6 +94,7 @@ function LandingPage({ onUpload, onLoadDemo, papers, setSelectedPaper, setSelect
           onDragOver={handleDrag}
           onDragLeave={handleDrag}
           onDrop={handleDrop}
+          onClick={() => document.getElementById('file-upload-input').click()}
           style={{
             border: dragActive ? '1px solid #ffffff' : '1px dashed #262626',
             background: dragActive ? '#0f0f0f' : 'transparent',
@@ -190,6 +191,7 @@ function LandingPage({ onUpload, onLoadDemo, papers, setSelectedPaper, setSelect
                     setSelectedPaper(paper);
                     setSelectedTemplate(null);
                     setMode('grading');
+                    setCurrentPage(1);
                   }}
                   style={{
                     display: 'flex',

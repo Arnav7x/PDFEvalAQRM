@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { X, Check } from 'lucide-react';
 
-export const MappingOverlay = ({ pageNumber }) => {
+export const SVGMappingOverlay = ({ pageNumber }) => {
   const {
     selectedTemplate,
     selectedPaper,
@@ -24,7 +24,7 @@ export const MappingOverlay = ({ pageNumber }) => {
   const activeRegions = selectedTemplate
     ? selectedTemplate.regions.filter(r => r.page === pageNumber)
     : selectedPaper
-    ? (selectedPaper.regions || []).filter(r => r.page === pageNumber)
+    ? selectedPaper.regions.filter(r => r.page === pageNumber)
     : [];
 
   const handleMouseDown = (e) => {
@@ -149,7 +149,7 @@ export const MappingOverlay = ({ pageNumber }) => {
   }, []);
 
   return (
-    <div
+    <svg
       ref={containerRef}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -165,124 +165,102 @@ export const MappingOverlay = ({ pageNumber }) => {
         zIndex: 10
       }}
     >
-      {/* Existing regions overlaid as interactive absolute divs */}
+      {/* Existing regions overlaid as interactive SVG elements */}
       {activeRegions.map((region) => {
         const isHighlighted = highlightedRegionId === region.id;
         
         return (
-          <div
+          <g
             key={region.id}
             onClick={(e) => {
               e.stopPropagation();
               setHighlightedRegionId(region.id);
             }}
             className={`region-box ${isHighlighted ? 'highlight-active' : ''}`}
-            style={{
-              position: 'absolute',
-              left: `${region.x}%`,
-              top: `${region.y}%`,
-              width: `${region.width}%`,
-              height: `${region.height}%`,
-              border: isHighlighted ? '2px solid var(--accent)' : '1px dashed var(--text-muted)',
-              borderRadius: 'var(--radius-sm)',
-              backgroundColor: isHighlighted ? 'var(--accent-light)' : 'rgba(255, 255, 255, 0.02)',
-              boxShadow: isHighlighted ? '0 2px 10px var(--accent-glow)' : 'none',
-              transition: 'all 0.1s ease',
-              zIndex: isHighlighted ? 20 : 15,
-            }}
           >
+            {/* Region rectangle */}
+            <rect
+              x={`${region.x}%`}
+              y={`${region.y}%`}
+              width={`${region.width}%`}
+              height={`${region.height}%`}
+              stroke={isHighlighted ? 'var(--accent)' : 'var(--text-muted)'}
+              strokeWidth={isHighlighted ? '2' : '1'}
+              strokeDasharray={isHighlighted ? 'none' : '2 2'}
+              fill={isHighlighted ? 'var(--accent-light)' : 'rgba(255, 255, 255, 0.02)'}
+              rx="2"
+              ry="2"
+            />
+            
             {/* Tag Badge */}
-            <div
-              style={{
-                position: 'absolute',
-                top: '-20px',
-                left: '0px',
-                backgroundColor: 'var(--text-primary)',
-                color: 'var(--bg-primary)',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                padding: '2px 6px',
-                borderRadius: '0px',
-                pointerEvents: 'none',
-                whiteSpace: 'nowrap',
-              }}
+            <text
+              x={`${region.x}%`}
+              y={`${Math.max(0, region.y - 5)}%`}
+              fontSize="11"
+              fontWeight="bold"
+              fill="var(--text-primary)"
+              pointerEvents="none"
             >
               {region.questionNumber}
-            </div>
-
+            </text>
+            
             {/* Delete button (only show in template/mapping editing mode) */}
             {(mode === 'mapping' || selectedTemplate) && (
-              <button
+              <g
+                transform={`translate(${parseFloat(region.x) + parseFloat(region.width)}%, ${region.y}%) scale(0.08)`}
                 onClick={(e) => {
                   e.stopPropagation();
                   removeRegion(region.id);
                 }}
-                style={{
-                  position: 'absolute',
-                  top: '-10px',
-                  right: '-10px',
-                  backgroundColor: 'var(--rose)',
-                  color: 'white',
-                  borderRadius: 'var(--radius-sm)',
-                  width: '20px',
-                  height: '20px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 0,
-                  border: 'none',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                }}
+                cursor="pointer"
               >
-                <X size={12} />
-              </button>
+                <circle cx="-5" cy="-5" r="5" fill="var(--rose)" />
+                <path d="M0 0 L1 1 M1 0 L0 1" stroke="white" strokeWidth="1.5" />
+              </g>
             )}
-          </div>
+          </g>
         );
       })}
 
       {/* Draw feedback box */}
       {tempBox && (
-        <div
-          style={{
-            position: 'absolute',
-            left: `${tempBox.x}px`,
-            top: `${tempBox.y}px`,
-            width: `${tempBox.w}px`,
-            height: `${tempBox.h}px`,
-            border: '1px dashed var(--accent)',
-            backgroundColor: 'rgba(255, 255, 255, 0.04)',
-            borderRadius: 'var(--radius-sm)',
-            pointerEvents: 'none',
-            zIndex: 18,
-          }}
+        <rect
+          x={`${tempBox.x}px`}
+          y={`${tempBox.y}px`}
+          width={`${tempBox.w}px`}
+          height={`${tempBox.h}px`}
+          stroke="var(--accent)"
+          strokeWidth="1"
+          strokeDasharray="2 2"
+          fill="rgba(255, 255, 255, 0.04)"
+          rx="2"
+          ry="2"
+          pointerEvents="none"
         />
       )}
 
       {/* Inline Naming Dialog */}
       {showNamingModal && (
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="glass-panel"
+        <foreignObject
+          x={`${showNamingModal.left}px`}
+          y={`${showNamingModal.top}px`}
+          width="220"
+          height="auto"
           style={{
-            position: 'absolute',
-            left: `${showNamingModal.left}px`,
-            top: `${showNamingModal.top}px`,
-            width: '220px',
-            padding: '12px',
-            borderRadius: 'var(--radius-md)',
             zIndex: 30,
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            border: '1px solid var(--border-glass)'
           }}
         >
-          <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+          <div xmlns="http://www.w3.org/1999/xhtml" style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
             Map Region To Question:
           </div>
-          <div style={{ display: 'flex', gap: '6px' }}>
+          <div xmlns="http://www.w3.org/1999/xhtml" style={{ display: 'flex', gap: '6px' }}>
             <input
               type="text"
               value={questionName}
@@ -296,6 +274,10 @@ export const MappingOverlay = ({ pageNumber }) => {
                 flex: 1,
                 fontSize: '13px',
                 padding: '6px 8px',
+                border: '1px solid var(--border-glass)',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'var(--bg-surface)',
+                color: 'var(--text-primary)'
               }}
             />
             <button
@@ -313,8 +295,8 @@ export const MappingOverlay = ({ pageNumber }) => {
               <X size={14} />
             </button>
           </div>
-        </div>
+        </foreignObject>
       )}
-    </div>
+    </svg>
   );
 };

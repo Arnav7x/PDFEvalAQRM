@@ -24,10 +24,10 @@ export const RightSidebar = () => {
   // Auto-fill grading input when question selection changes
   useEffect(() => {
     if (!selectedPaper || !highlightedRegionId) return;
-    const region = selectedPaper.regions.find(r => r.id === highlightedRegionId);
+    const region = (selectedPaper.regions || []).find(r => r.id === highlightedRegionId);
     if (region) {
       setActiveGradeQ(region.questionNumber);
-      const grade = selectedPaper.grades[region.questionNumber];
+      const grade = (selectedPaper.grades || {})[region.questionNumber];
       setScore(grade?.score !== undefined ? String(grade.score) : '');
       setFeedback(grade?.feedback || '');
     }
@@ -158,7 +158,7 @@ export const RightSidebar = () => {
     saveGrade(activeGradeQ, parseFloat(score) || 0, feedback);
     
     // Automatically select the NEXT ungraded question to speed up the workflow!
-    const activeRegions = selectedPaper.regions;
+    const activeRegions = selectedPaper.regions || [];
     const sorted = [...activeRegions].sort((a, b) => {
       if (a.page !== b.page) return a.page - b.page;
       return a.y - b.y;
@@ -168,7 +168,7 @@ export const RightSidebar = () => {
     const nextUngraded = sorted
       .slice(currentIndex + 1)
       .concat(sorted.slice(0, currentIndex))
-      .find(r => selectedPaper.grades[r.questionNumber]?.score === undefined);
+      .find(r => (selectedPaper.grades || {})[r.questionNumber]?.score === undefined);
       
     if (nextUngraded) {
       setHighlightedRegionId(nextUngraded.id);
@@ -179,9 +179,9 @@ export const RightSidebar = () => {
 
   if (!selectedPaper) return null;
 
-  const pageOffset = selectedPaper.offsets[currentPage] || { x: 0, y: 0, scale: 1.0 };
-  const totalScore = Object.values(selectedPaper.grades).reduce((acc, val) => acc + (val.score || 0), 0);
-  const gradedCount = Object.keys(selectedPaper.grades).length;
+  const pageOffset = selectedPaper.offsets?.[currentPage] || { x: 0, y: 0, scale: 1.0 };
+  const totalScore = Object.values(selectedPaper.grades || {}).reduce((acc, val) => acc + (val.score || 0), 0);
+  const gradedCount = Object.keys(selectedPaper.grades || {}).length;
 
   return (
     <div
@@ -217,7 +217,7 @@ export const RightSidebar = () => {
       >
         <div>
           <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block', textTransform: 'uppercase', fontWeight: '600' }}>Evaluation Progress</span>
-          <span style={{ fontSize: '13px', fontWeight: '500' }}>{gradedCount} / {selectedPaper.regions.length} questions graded</span>
+          <span style={{ fontSize: '13px', fontWeight: '500' }}>{gradedCount} / {(selectedPaper.regions || []).length} questions graded</span>
         </div>
         <div style={{ textAlign: 'right' }}>
           <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block' }}>Total Marks</span>
@@ -226,7 +226,7 @@ export const RightSidebar = () => {
       </div>
 
       {/* Template Setup Check */}
-      {selectedPaper.regions.length === 0 ? (
+      {(selectedPaper.regions || []).length === 0 ? (
         <div
           className="glass-panel"
           style={{
@@ -365,14 +365,14 @@ export const RightSidebar = () => {
               
               {/* Question list scroll */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' }}>
-                {[...selectedPaper.regions]
+                {[...(selectedPaper.regions || [])]
                   .sort((a, b) => {
                     if (a.page !== b.page) return a.page - b.page;
                     return a.y - b.y;
                   })
                   .map((region) => {
                     const isSelected = highlightedRegionId === region.id;
-                    const grade = selectedPaper.grades[region.questionNumber];
+                    const grade = (selectedPaper.grades || {})[region.questionNumber];
                     const isGraded = grade?.score !== undefined;
                     
                     return (

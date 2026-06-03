@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getTemplates, saveTemplate as dbSaveTemplate, deleteTemplate as dbDeleteTemplate, getPapers, savePaper as dbSavePaper, deletePaper as dbDeletePaper } from '../utils/storage';
+import { api } from '../utils/api';
 
-const WorkspaceContext = createContext(undefined);
+const WorkspaceContext = createContext(null);
 
 export const WorkspaceProvider = ({ children }) => {
   const [mode, setMode] = useState('mapping');
@@ -26,105 +26,122 @@ export const WorkspaceProvider = ({ children }) => {
     setToast(null);
   };
 
-  // Load from Storage on mount
-  useEffect(() => {
-    setTemplates(getTemplates());
-    setPapers(getPapers());
-  }, []);
+// Load from Storage on mount
+useEffect(() => {
+  loadTemplates();
+  loadPapers();
+}, []);
 
-  // Sync state back to storage helper
-  const handleUpdateTemplate = (updated) => {
-    dbSaveTemplate(updated);
-    setTemplates(getTemplates());
-    if (selectedTemplate?.id === updated.id) {
-      setSelectedTemplate(updated);
-    }
+// Helper functions to load data from API
+const loadTemplates = async () => {
+  try {
+    const templatesData = await api.getTemplates();
+    setTemplates(templatesData);
+  } catch (error) {
+    console.error('Failed to load templates:', error);
+  }
+};
+
+const loadPapers = async () => {
+  try {
+    const papersData = await api.getPapers();
+    setPapers(papersData);
+  } catch (error) {
+    console.error('Failed to load papers:', error);
+  }
+};
+
+// Sync state back to storage helper
+const handleUpdateTemplate = async (updated) => {
+  await api.updateTemplate(updated.id, updated);
+  await loadTemplates();
+  if (selectedTemplate?.id === updated.id) {
+    setSelectedTemplate(updated);
+  }
+};
+
+const handleDeleteTemplate = async (id) => {
+  await api.deleteTemplate(id);
+  await loadTemplates();
+  if (selectedTemplate?.id === id) {
+    setSelectedTemplate(null);
+  }
+};
+
+const handleUpdatePaper = async (updated) => {
+  await api.updatePaper(updated.id, updated);
+  await loadPapers();
+  if (selectedPaper?.id === updated.id) {
+    setSelectedPaper(updated);
+  }
+};
+
+const handleDeletePaper = async (id) => {
+  await api.deletePaper(id);
+  await loadPapers();
+  if (selectedPaper?.id === id) {
+    setSelectedPaper(null);
+  }
+};
+
+const createTemplate = async (name, pageCount) => {
+  const newTpl = {
+    name,
+    pageCount,
+    aspectRatio: 0.7619, // Default to mock paper aspect ratio (800x1050)
+    regions: [],
+  };
+  const savedTemplate = await api.createTemplate(newTpl);
+  await loadTemplates();
+  setSelectedTemplate(savedTemplate);
+  setSelectedPaper(null); // Clear selected paper when mapping a template
+  setMode('mapping');
+  setCurrentPage(1);
+  return savedTemplate;
+};
+
+const createPaper = async (studentName, fileName, fileSize, pdfUrl) => {
+  const newPaper = {
+    studentName,
+    fileName,
+    fileSize,
+    pdfUrl,
+    aspectRatio: 0.7619, // Default, will be recalculated once PDF loads
+    regions: [],
+    offsets: {},
+    grades: {},
+  };
+  const savedPaper = await api.createPaper(newPaper);
+  await loadPapers();
+  setSelectedPaper(savedPaper);
+  setSelectedTemplate(null); // Clear active template
+  setMode('grading');
+  setCurrentPage(1);
+  return savedPaper;
+};
+
+const addRegion = async (regionData) => {
+  // For now, we'll handle region addition locally and sync later
+  // In a more complex implementation, we'd have a dedicated region API endpoint
+  const newRegion = {
+    ...regionData,
+    id: `region-${Date.now()}`
   };
 
-  const handleDeleteTemplate = (id) => {
-    dbDeleteTemplate(id);
-    setTemplates(getTemplates());
-    if (selectedTemplate?.id === id) {
-      setSelectedTemplate(null);
-    }
-  };
-
-  const handleUpdatePaper = (updated) => {
-    dbSavePaper(updated);
-    setPapers(getPapers());
-    if (selectedPaper?.id === updated.id) {
-      setSelectedPaper(updated);
-    }
-  };
-
-  const handleDeletePaper = (id) => {
-    dbDeletePaper(id);
-    setPapers(getPapers());
-    if (selectedPaper?.id === id) {
-      setSelectedPaper(null);
-    }
-  };
-
-  const createTemplate = (name, pageCount) => {
-    const newTpl = {
-      id: `tpl-${Date.now()}`,
-      name,
-      pageCount,
-      aspectRatio: 0.7619, // Default to mock paper aspect ratio (800x1050)
-      regions: [],
-      createdAt: new Date().toISOString()
+  if (selectedTemplate) {
+    const updated = {
+      ...selectedTemplate,
+      regions: [...selectedTemplate.regions, newRegion]
     };
-    dbSaveTemplate(newTpl);
-    setTemplates(getTemplates());
-    setSelectedTemplate(newTpl);
-    setSelectedPaper(null); // Clear selected paper when mapping a template
-    setMode('mapping');
-    setCurrentPage(1);
-    return newTpl;
-  };
-
-  const createPaper = (studentName, fileName, fileSize, pdfUrl) => {
-    const newPaper = {
-      id: `paper-${Date.now()}`,
-      studentName,
-      fileName,
-      fileSize,
-      pdfUrl,
-      aspectRatio: 0.7619, // Default, will be recalculated once PDF loads
-      regions: [],
-      offsets: {},
-      grades: {},
-      createdAt: new Date().toISOString()
+    await handleUpdateTemplate(updated);
+  } else if (selectedPaper) {
+    const updated = {
+      ...selectedPaper,
+      regions: [...selectedPaper.regions, newRegion]
     };
-    dbSavePaper(newPaper);
-    setPapers(getPapers());
-    setSelectedPaper(newPaper);
-    setSelectedTemplate(null); // Clear active template
-    setMode('grading');
-    setCurrentPage(1);
-    return newPaper;
-  };
-
-  const addRegion = (regionData) => {
-    const newRegion = {
-      ...regionData,
-      id: `region-${Date.now()}`
-    };
-
-    if (selectedTemplate) {
-      const updated = {
-        ...selectedTemplate,
-        regions: [...selectedTemplate.regions, newRegion]
-      };
-      handleUpdateTemplate(updated);
-    } else if (selectedPaper) {
-      const updated = {
-        ...selectedPaper,
-        regions: [...selectedPaper.regions, newRegion]
-      };
-      handleUpdatePaper(updated);
-    }
-  };
+    await handleUpdatePaper(updated);
+  }
+};
 
   const removeRegion = (id) => {
     if (selectedTemplate) {
@@ -179,9 +196,9 @@ export const WorkspaceProvider = ({ children }) => {
 
   const updateOffset = (page, offsetUpdate) => {
     if (!selectedPaper) return;
-    const currentOffset = selectedPaper.offsets[page] || { x: 0, y: 0, scale: 1.0 };
+    const currentOffset = selectedPaper.offsets?.[page] || { x: 0, y: 0, scale: 1.0 };
     const updatedOffsets = {
-      ...selectedPaper.offsets,
+      ...(selectedPaper.offsets || {}),
       [page]: { ...currentOffset, ...offsetUpdate }
     };
     

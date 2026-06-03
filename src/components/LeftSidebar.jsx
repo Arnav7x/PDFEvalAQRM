@@ -182,7 +182,7 @@ export const LeftSidebar = () => {
                   <FileSpreadsheet size={16} style={{ color: isActive ? 'var(--accent)' : 'var(--text-secondary)', flexShrink: 0 }} />
                   <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     <span style={{ fontSize: '13px', fontWeight: '500', display: 'block' }}>{tpl.name}</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{tpl.regions.length} questions • {tpl.pageCount} pages</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{(tpl.regions || []).length} questions • {tpl.pageCount} pages</span>
                   </div>
                 </div>
                 {/* Delete button (except core mock template) */}
@@ -244,7 +244,9 @@ export const LeftSidebar = () => {
           ) : (
             papers.map(paper => {
               const isActive = selectedPaper?.id === paper.id;
-              const isGraded = Object.keys(paper.grades).length === paper.regions.length && paper.regions.length > 0;
+              const paperGrades = paper.grades || {};
+              const paperRegions = paper.regions || [];
+              const isGraded = Object.keys(paperGrades).length === paperRegions.length && paperRegions.length > 0;
               return (
                 <div
                   key={paper.id}
@@ -271,7 +273,7 @@ export const LeftSidebar = () => {
                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       <span style={{ fontSize: '13px', fontWeight: '500', display: 'block' }}>{paper.studentName}</span>
                       <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                        {paper.regions.length > 0 ? `${Object.keys(paper.grades).length}/${paper.regions.length} Graded` : 'No template'}
+                        {paperRegions.length > 0 ? `${Object.keys(paperGrades).length}/${paperRegions.length} Graded` : 'No template'}
                       </span>
                     </div>
                   </div>
