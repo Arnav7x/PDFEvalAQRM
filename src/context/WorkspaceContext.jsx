@@ -14,6 +14,8 @@ export const WorkspaceProvider = ({ children }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(1.0);
   const [highlightedRegionId, setHighlightedRegionId] = useState(null);
+  const [selectedArea, setSelectedArea] = useState(null);
+  const [overlayTool, setOverlayTool] = useState('select');
 
   // Toast notification state
   const [toast, setToast] = useState(null);
@@ -97,6 +99,9 @@ const createTemplate = async (name, pageCount) => {
   setSelectedPaper(null); // Clear selected paper when mapping a template
   setMode('mapping');
   setCurrentPage(1);
+  setHighlightedRegionId(null);
+  setSelectedArea(null);
+  setOverlayTool('select');
   return savedTemplate;
 };
 
@@ -115,8 +120,11 @@ const createPaper = async (studentName, fileName, fileSize, pdfUrl) => {
   await loadPapers();
   setSelectedPaper(savedPaper);
   setSelectedTemplate(null); // Clear active template
-  setMode('grading');
+  setMode('mapping'); // Start in mapping mode to allow creating regions freely
   setCurrentPage(1);
+  setHighlightedRegionId(null);
+  setSelectedArea(null);
+  setOverlayTool('select');
   return savedPaper;
 };
 
@@ -134,13 +142,21 @@ const addRegion = async (regionData) => {
       regions: [...selectedTemplate.regions, newRegion]
     };
     await handleUpdateTemplate(updated);
+    setHighlightedRegionId(newRegion.id);
+    setSelectedArea(null);
+    setOverlayTool('select');
   } else if (selectedPaper) {
     const updated = {
       ...selectedPaper,
       regions: [...selectedPaper.regions, newRegion]
     };
     await handleUpdatePaper(updated);
+    setHighlightedRegionId(newRegion.id);
+    setSelectedArea(null);
+    setOverlayTool('select');
   }
+
+  return newRegion;
 };
 
   const removeRegion = (id) => {
@@ -192,6 +208,9 @@ const addRegion = async (regionData) => {
     }
 
     handleUpdatePaper(updated);
+    setHighlightedRegionId(copiedRegions[0]?.id || null);
+    setSelectedArea(null);
+    setOverlayTool('select');
   };
 
   const updateOffset = (page, offsetUpdate) => {
@@ -245,6 +264,10 @@ const addRegion = async (regionData) => {
         setZoom,
         highlightedRegionId,
         setHighlightedRegionId,
+        selectedArea,
+        setSelectedArea,
+        overlayTool,
+        setOverlayTool,
         addRegion,
         removeRegion,
         applyTemplate,

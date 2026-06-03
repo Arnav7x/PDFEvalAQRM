@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { renderMockPage } from '../utils/mockExamRenderer';
 import { SVGMappingOverlay as MappingOverlay } from './SVGMappingOverlay';
-import { ZoomIn, ZoomOut, RotateCcw, AlertCircle } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, AlertCircle, MousePointer2 } from 'lucide-react';
 
 // Setup PDF.js worker
 import * as pdfjs from 'pdfjs-dist';
@@ -18,7 +18,8 @@ export const PdfViewer = () => {
     setCurrentPage,
     zoom,
     setZoom,
-    highlightedRegionId
+    highlightedRegionId,
+    setOverlayTool
   } = useWorkspace();
 
   const containerRef = useRef(null);
@@ -145,10 +146,12 @@ export const PdfViewer = () => {
   const PageCanvas = ({ pageNum }) => {
     const canvasRef = useRef(null);
     const renderTaskRef = useRef(null);
+    const [textLayerItems, setTextLayerItems] = useState([]);
 
     useEffect(() => {
       const canvas = canvasRef.current;
       if (!canvas) return;
+      let isActive = true;
 
       const baseWidth = 800;
       const baseHeight = 1050; // Standard letter/A4 aspect ratio
@@ -159,6 +162,7 @@ export const PdfViewer = () => {
       // Check if we render using pdfDoc or mockup renderer
       if (pdfDoc && !pdfLoadingError) {
         pdfDoc.getPage(pageNum).then((page) => {
+          if (!isActive) return;
           const ctx = canvas.getContext('2d');
           if (!ctx) return;
 
@@ -170,6 +174,30 @@ export const PdfViewer = () => {
           const unscaledViewport = page.getViewport({ scale: 1.0 });
           const scale = (canvas.width / unscaledViewport.width);
           const viewport = page.getViewport({ scale });
+
+          page.getTextContent().then((textContent) => {
+            if (!isActive) return;
+
+            const items = textContent.items
+              .filter((item) => item.str?.trim())
+              .map((item, index) => {
+                const tx = pdfjs.Util.transform(viewport.transform, item.transform);
+                const rotation = Math.atan2(tx[1], tx[0]) * (180 / Math.PI);
+                const fontSize = Math.max(10, Math.hypot(tx[2], tx[3]));
+
+                return {
+                  id: `${pageNum}-${index}`,
+                  text: item.str,
+                  left: tx[4],
+                  top: tx[5] - fontSize,
+                  fontSize,
+                  rotation,
+                  width: item.width * scale,
+                };
+              });
+
+            setTextLayerItems(items);
+          });
 
           // Cancel any ongoing render
           if (renderTaskRef.current) {
@@ -221,9 +249,18 @@ export const PdfViewer = () => {
         });
       } else {
         // Draw Mock Sheet
+        setTextLayerItems([]);
         const offset = selectedPaper?.offsets?.[pageNum] || { x: 0, y: 0, scale: 1.0 };
         renderMockPage(canvas, pageNum, offset);
       }
+
+      return () => {
+        isActive = false;
+        if (renderTaskRef.current) {
+          renderTaskRef.current.cancel();
+          renderTaskRef.current = null;
+        }
+      };
     }, [pdfDoc, pageNum, zoom, selectedPaper?.offsets?.[pageNum], pdfLoadingError]);
 
     return (
@@ -251,6 +288,40 @@ export const PdfViewer = () => {
             height: '100%',
           }}
         />
+        {textLayerItems.length > 0 && (
+          <div
+            className="pdf-text-layer"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              overflow: 'hidden',
+              pointerEvents: 'none',
+              userSelect: 'none',
+              cursor: 'default',
+              zIndex: 6,
+            }}
+          >
+            {textLayerItems.map((item) => (
+              <span
+                key={item.id}
+                style={{
+                  position: 'absolute',
+                  left: `${item.left}px`,
+                  top: `${item.top}px`,
+                  minWidth: `${item.width}px`,
+                  fontSize: `${item.fontSize}px`,
+                  lineHeight: 1,
+                  color: 'transparent',
+                  whiteSpace: 'pre',
+                  transform: `rotate(${item.rotation}deg)`,
+                  transformOrigin: '0 0',
+                }}
+              >
+                {item.text}
+              </span>
+            ))}
+          </div>
+        )}
         <MappingOverlay pageNumber={pageNum} />
       </div>
     );
@@ -289,6 +360,29 @@ export const PdfViewer = () => {
           >
             Page {currentPage} of {numPages}
           </span>
+          <div
+            style={{
+              display: 'flex',
+              gap: '2px',
+              background: 'rgba(255,255,255,0.03)',
+              padding: '2px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border-glass)'
+            }}
+          >
+            <button
+              onClick={() => setOverlayTool('select')}
+              className="btn-secondary"
+              style={{
+                padding: '6px 10px',
+                background: 'var(--bg-surface)',
+                color: 'white'
+              }}
+              title="Select Area"
+            >
+              <MousePointer2 size={14} /> Select Region
+            </button>
+          </div>
         </div>
 
         {/* PDF Fallback Alert if loading failed */}

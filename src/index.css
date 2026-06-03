@@ -23,6 +23,7 @@
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
   --text-muted: #52525b;
+  --text-on-light: #050505;
   
   --radius-sm: 0px; /* Sharp corners */
   --radius-md: 0px;
@@ -100,7 +101,7 @@ button, .btn {
 
 .btn-primary {
   background: var(--accent);
-  color: #ffffff;
+  color: var(--text-on-light);
   box-shadow: 0 4px 14px 0 var(--accent-glow);
 }
 
@@ -164,6 +165,11 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 2px var(--accent-light);
 }
 
+option {
+  background: #ffffff;
+  color: var(--text-on-light);
+}
+
 /* Animations */
 @keyframes pulse-ring {
   0% {
@@ -208,4 +214,18 @@ input:focus, select:focus, textarea:focus {
     transform: translateY(0) scale(1);
     opacity: 1;
   }
+}
+
+.pdf-text-layer {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.pdf-text-layer.is-active {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.pdf-text-layer span::selection {
+  background: rgba(255, 255, 255, 0.35);
 }

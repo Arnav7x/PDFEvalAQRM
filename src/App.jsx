@@ -5,7 +5,7 @@ import { RightSidebar } from './components/RightSidebar';
 import { PdfViewer } from './components/PdfViewer';
 import { ShieldAlert, Upload, FileText, ArrowRight, CheckSquare } from 'lucide-react';
 
-function LandingPage({ onUpload, onLoadDemo, papers, setSelectedPaper, setSelectedTemplate, setMode }) {
+function LandingPage({ onUpload, onLoadDemo, papers, setSelectedPaper, setSelectedTemplate, setMode, setOverlayTool, setHighlightedRegionId, setCurrentPage }) {
   const [dragActive, setDragActive] = useState(false);
   const [studentName, setStudentName] = useState('');
 
@@ -191,6 +191,8 @@ function LandingPage({ onUpload, onLoadDemo, papers, setSelectedPaper, setSelect
                     setSelectedPaper(paper);
                     setSelectedTemplate(null);
                     setMode('grading');
+                    setOverlayTool('select');
+                    setHighlightedRegionId(null);
                     setCurrentPage(1);
                   }}
                   style={{
@@ -235,7 +237,10 @@ function MainAppContent() {
     papers, 
     setSelectedPaper, 
     setSelectedTemplate, 
-    setMode 
+    setMode,
+    setOverlayTool,
+    setHighlightedRegionId,
+    setCurrentPage
   } = useWorkspace();
 
   const handleUpload = (studentName, fileName, fileSize, pdfUrl) => {
@@ -250,6 +255,7 @@ function MainAppContent() {
         setSelectedPaper(existing);
         setSelectedTemplate(null);
         setMode('grading');
+        setOverlayTool('select');
       }
       return;
     }
@@ -272,6 +278,9 @@ function MainAppContent() {
         setSelectedPaper={setSelectedPaper}
         setSelectedTemplate={setSelectedTemplate}
         setMode={setMode}
+        setOverlayTool={setOverlayTool}
+        setHighlightedRegionId={setHighlightedRegionId}
+        setCurrentPage={setCurrentPage}
       />
     );
   }

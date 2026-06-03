@@ -19,6 +19,7 @@ export const MappingOverlay = ({ pageNumber }) => {
   const [tempBox, setTempBox] = useState(null);
   const [showNamingModal, setShowNamingModal] = useState(null);
   const [questionName, setQuestionName] = useState('');
+  const canDrawRegions = mode === 'mapping' || !!selectedTemplate;
 
   // Fetch active regions for this page
   const activeRegions = selectedTemplate
@@ -27,10 +28,32 @@ export const MappingOverlay = ({ pageNumber }) => {
     ? (selectedPaper.regions || []).filter(r => r.page === pageNumber)
     : [];
 
+  const findRegionElement = (target) => {
+    let current = target;
+    while (current && current !== containerRef.current) {
+      if (current.dataset?.regionId) {
+        return current;
+      }
+      current = current.parentElement;
+    }
+    return null;
+  };
+
   const handleMouseDown = (e) => {
     // If modal is showing, clicking outside should dismiss it
     if (showNamingModal) {
       setShowNamingModal(null);
+      return;
+    }
+
+    const clickedRegion = findRegionElement(e.target);
+    if (clickedRegion) {
+      setHighlightedRegionId(clickedRegion.dataset.regionId);
+      return;
+    }
+
+    if (!canDrawRegions) {
+      setHighlightedRegionId(null);
       return;
     }
 
@@ -172,6 +195,7 @@ export const MappingOverlay = ({ pageNumber }) => {
         return (
           <div
             key={region.id}
+            data-region-id={region.id}
             onClick={(e) => {
               e.stopPropagation();
               setHighlightedRegionId(region.id);
@@ -213,6 +237,7 @@ export const MappingOverlay = ({ pageNumber }) => {
             {/* Delete button (only show in template/mapping editing mode) */}
             {(mode === 'mapping' || selectedTemplate) && (
               <button
+                data-region-id={region.id}
                 onClick={(e) => {
                   e.stopPropagation();
                   removeRegion(region.id);

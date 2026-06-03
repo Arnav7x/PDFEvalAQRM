@@ -8,28 +8,195 @@ export const RightSidebar = () => {
     selectedPaper,
     templates,
     applyTemplate,
+    addRegion,
     removeRegion,
     highlightedRegionId,
     setHighlightedRegionId,
+    selectedArea,
+    setSelectedArea,
     updateOffset,
     saveGrade,
-    currentPage
+    currentPage,
+    mode,
+    setMode
   } = useWorkspace();
 
   const [activeTab, setActiveTab] = useState('questions');
   const [activeGradeQ, setActiveGradeQ] = useState(null);
   const [score, setScore] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [selectedAreaName, setSelectedAreaName] = useState('');
+
+  const selectedRegion = selectedTemplate
+    ? (selectedTemplate.regions || []).find(r => r.id === highlightedRegionId)
+    : selectedPaper
+      ? (selectedPaper.regions || []).find(r => r.id === highlightedRegionId)
+      : null;
+
+  const allActiveRegions = selectedTemplate
+    ? (selectedTemplate.regions || [])
+    : selectedPaper
+      ? (selectedPaper.regions || [])
+      : [];
+
+  useEffect(() => {
+    if (!selectedArea) {
+      setSelectedAreaName('');
+      return;
+    }
+
+    const nextQuestionNumber = allActiveRegions.length + 1;
+    setSelectedAreaName(`Q${nextQuestionNumber}`);
+  }, [selectedArea, allActiveRegions.length]);
+
+  const handleSaveSelectedArea = async () => {
+    if (!selectedArea || !selectedAreaName.trim()) return;
+
+    await addRegion({
+      questionNumber: selectedAreaName.trim(),
+      page: selectedArea.page,
+      x: selectedArea.x,
+      y: selectedArea.y,
+      width: selectedArea.width,
+      height: selectedArea.height
+    });
+
+    setSelectedAreaName('');
+  };
+
+  const renderSelectedRegionPanel = (grade) => (
+    <div
+      className="glass-panel"
+      style={{
+        padding: '12px',
+        background: 'rgba(255,255,255,0.01)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px'
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+        <div>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: '600' }}>
+            {selectedRegion ? 'Selected Region' : selectedArea ? 'Selected Area' : 'Selection'}
+          </div>
+          <div style={{ fontSize: '15px', fontWeight: '700', color: 'white' }}>
+            {selectedRegion?.questionNumber || (selectedArea ? `Page ${selectedArea.page}` : 'None')}
+          </div>
+        </div>
+        {(selectedRegion || selectedArea) && (
+          <button
+            onClick={() => {
+              setHighlightedRegionId(null);
+              setSelectedArea(null);
+            }}
+            className="btn-ghost"
+            style={{ padding: '4px 8px', fontSize: '11px' }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {selectedRegion ? (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
+            <div style={{ border: '1px solid var(--border-glass)', padding: '8px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Page</div>
+              <div style={{ fontSize: '13px', fontWeight: '600' }}>Page {selectedRegion.page}</div>
+            </div>
+            <div style={{ border: '1px solid var(--border-glass)', padding: '8px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Bounds</div>
+              <div style={{ fontSize: '13px', fontWeight: '600' }}>
+                {Math.round(selectedRegion.width)}% x {Math.round(selectedRegion.height)}%
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+            Position: x {selectedRegion.x.toFixed(1)}%, y {selectedRegion.y.toFixed(1)}%
+          </div>
+          {grade && (
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+              Current grade: <span style={{ color: 'var(--emerald)', fontWeight: '700' }}>{grade.score} pts</span>
+            </div>
+          )}
+        </>
+      ) : selectedArea ? (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
+            <div style={{ border: '1px solid var(--border-glass)', padding: '8px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Page</div>
+              <div style={{ fontSize: '13px', fontWeight: '600' }}>Page {selectedArea.page}</div>
+            </div>
+            <div style={{ border: '1px solid var(--border-glass)', padding: '8px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Bounds</div>
+              <div style={{ fontSize: '13px', fontWeight: '600' }}>
+                {Math.round(selectedArea.width)}% x {Math.round(selectedArea.height)}%
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+            Position: x {selectedArea.x.toFixed(1)}%, y {selectedArea.y.toFixed(1)}%
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: '600' }}>
+              Region Name
+            </label>
+            <input
+              type="text"
+              value={selectedAreaName}
+              onChange={(e) => setSelectedAreaName(e.target.value)}
+              placeholder="e.g. Q1"
+              style={{ width: '100%' }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={handleSaveSelectedArea}
+              className="btn-primary"
+              style={{ flex: 1, justifyContent: 'center' }}
+              disabled={!selectedAreaName.trim()}
+            >
+              Save
+            </button>
+            <button
+              onClick={() => {
+                setSelectedArea(null);
+                setSelectedAreaName('');
+              }}
+              className="btn-secondary"
+              style={{ flex: 1, justifyContent: 'center' }}
+            >
+              Delete
+            </button>
+          </div>
+        </>
+      ) : (
+        <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+          Use <strong>Select Region</strong> to drag a snipping-style selection on the PDF, or click a mapped region from the page or list below.
+        </div>
+      )}
+    </div>
+  );
 
   // Auto-fill grading input when question selection changes
   useEffect(() => {
-    if (!selectedPaper || !highlightedRegionId) return;
+    if (!selectedPaper || !highlightedRegionId) {
+      setActiveGradeQ(null);
+      setScore('');
+      setFeedback('');
+      return;
+    }
     const region = (selectedPaper.regions || []).find(r => r.id === highlightedRegionId);
     if (region) {
       setActiveGradeQ(region.questionNumber);
       const grade = (selectedPaper.grades || {})[region.questionNumber];
       setScore(grade?.score !== undefined ? String(grade.score) : '');
       setFeedback(grade?.feedback || '');
+    } else {
+      setActiveGradeQ(null);
+      setScore('');
+      setFeedback('');
     }
   }, [highlightedRegionId, selectedPaper]);
 
@@ -82,6 +249,7 @@ export const RightSidebar = () => {
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {renderSelectedRegionPanel()}
           <h3 style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
             Mapped Regions ({selectedTemplate.regions.length})
           </h3>
@@ -182,6 +350,7 @@ export const RightSidebar = () => {
   const pageOffset = selectedPaper.offsets?.[currentPage] || { x: 0, y: 0, scale: 1.0 };
   const totalScore = Object.values(selectedPaper.grades || {}).reduce((acc, val) => acc + (val.score || 0), 0);
   const gradedCount = Object.keys(selectedPaper.grades || {}).length;
+  const selectedGrade = selectedRegion ? (selectedPaper.grades || {})[selectedRegion.questionNumber] : null;
 
   return (
     <div
@@ -239,24 +408,120 @@ export const RightSidebar = () => {
           }}
         >
           <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--amber)', display: 'flex', gap: '6px', alignItems: 'center' }}>
-            No Template Applied
+            No Regions Mapped
           </div>
           <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-            This student document has no question tags mapped. Choose a saved template to instantly copy its regions.
+            This student document has no question regions. You can either apply an existing template or create regions manually.
           </p>
+          
+          {/* Option 1: Apply Template */}
+          <div style={{ fontSize: '11px', fontWeight: '600', color: 'white' }}>Apply Template:</div>
           <select
             onChange={handleApplyTemplateSelect}
             defaultValue=""
             style={{ width: '100%', fontSize: '12px' }}
           >
-            <option value="" disabled>-- Select a template to apply --</option>
+            <option value="" disabled>-- Select a template --</option>
             {templates.map(t => (
               <option key={t.id} value={t.id}>{t.name} ({t.regions.length} regions)</option>
             ))}
           </select>
+
+          {/* Option 2: Create Manually */}
+          <div style={{ fontSize: '11px', fontWeight: '600', color: 'white', marginTop: '8px' }}>Or Create Manually:</div>
+          <button
+            onClick={() => setMode('mapping')}
+            className="btn-primary"
+            style={{ fontSize: '11px', padding: '8px', justifyContent: 'center' }}
+          >
+            Create Regions by Drawing
+          </button>
+          <p style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.3', marginTop: '4px' }}>
+            Click and drag on the PDF to mark question regions. You can add, edit, and grade them all in one place!
+          </p>
+        </div>
+      ) : mode === 'mapping' ? (
+        // --- PAPER MAPPING MODE (Creating regions manually) ---
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto' }}>
+          {/* Mode indicator */}
+          <div style={{ padding: '10px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: 'var(--radius-sm)', fontSize: '11px', color: 'var(--accent)' }}>
+            📍 Mapping Mode - Draw question regions on the PDF
+          </div>
+
+          {/* Selected Region Panel */}
+          {renderSelectedRegionPanel()}
+
+          {/* Region List */}
+          <h3 style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+            Mapped Regions ({selectedPaper.regions.length})
+          </h3>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto', flex: 1 }}>
+            {selectedPaper.regions.length === 0 ? (
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '24px 0', border: '1px dashed var(--border-glass)' }}>
+                No regions yet. Click and drag on the document to create one.
+              </div>
+            ) : (
+              selectedPaper.regions
+                .sort((a, b) => {
+                  if (a.page !== b.page) return a.page - b.page;
+                  return a.y - b.y;
+                })
+                .map((region) => {
+                  const isHighlighted = highlightedRegionId === region.id;
+                  return (
+                    <div
+                      key={region.id}
+                      onClick={() => setHighlightedRegionId(region.id)}
+                      className="glass-panel-hover"
+                      style={{
+                        padding: '10px',
+                        borderRadius: 'var(--radius-sm)',
+                        background: isHighlighted ? 'var(--accent-light)' : 'rgba(255,255,255,0.01)',
+                        border: isHighlighted ? '1px solid var(--accent)' : '1px solid var(--border-glass)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'white' }}>{region.questionNumber}</span>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block' }}>
+                          Page {region.page} • Bounds: {Math.round(region.width)}% x {Math.round(region.height)}%
+                        </span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeRegion(region.id);
+                        }}
+                        className="btn-ghost"
+                        style={{ padding: '4px', color: 'var(--rose)' }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  );
+                })
+            )}
+          </div>
+
+          {/* Switch to Grading Mode */}
+          {selectedPaper.regions.length > 0 && (
+            <button
+              onClick={() => setMode('grading')}
+              className="btn-secondary"
+              style={{ fontSize: '11px', padding: '8px', justifyContent: 'center', marginTop: '8px' }}
+            >
+              Switch to Grading Mode
+            </button>
+          )}
         </div>
       ) : (
+        // --- PAPER GRADING MODE ---
         <>
+          {renderSelectedRegionPanel(selectedGrade)}
           {/* Tab Selection */}
           <div style={{ display: 'flex', gap: '2px', background: 'rgba(255,255,255,0.03)', padding: '2px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-glass)' }}>
             <button
@@ -283,7 +548,7 @@ export const RightSidebar = () => {
                 color: activeTab === 'adjustments' ? 'white' : 'var(--text-secondary)',
               }}
             >
-              Align Template
+              Align & Add Regions
             </button>
           </div>
 
@@ -291,7 +556,7 @@ export const RightSidebar = () => {
           {activeTab === 'adjustments' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                If this document's printed layout is shifted relative to the template, use these controls to offset the page details and align them under the regions.
+                Adjust page alignment or add more regions while grading.
               </div>
               <div className="glass-panel" style={{ padding: '12px', background: 'rgba(255,255,255,0.01)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ fontSize: '12px', fontWeight: 'bold' }}>Page {currentPage} Tuning</div>
@@ -354,6 +619,15 @@ export const RightSidebar = () => {
                   style={{ fontSize: '11px', padding: '6px', justifyContent: 'center' }}
                 >
                   Reset Page Alignment
+                </button>
+
+                {/* Add More Regions button */}
+                <button
+                  onClick={() => setMode('mapping')}
+                  className="btn-primary"
+                  style={{ fontSize: '11px', padding: '8px', justifyContent: 'center', marginTop: '8px' }}
+                >
+                  Add More Regions
                 </button>
               </div>
             </div>
