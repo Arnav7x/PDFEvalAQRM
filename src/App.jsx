@@ -4,6 +4,7 @@ import { LeftSidebar } from './components/LeftSidebar';
 import { RightSidebar } from './components/RightSidebar';
 import { PdfViewer } from './components/PdfViewer';
 import { ShieldAlert, Upload, FileText, ArrowRight, CheckSquare } from 'lucide-react';
+import AppRoutes from './routes/AppRoutes';
 
 function LandingPage({ onUpload, onLoadDemo, papers, setSelectedPaper, setSelectedTemplate, setMode, setOverlayTool, setHighlightedRegionId, setCurrentPage }) {
   const [dragActive, setDragActive] = useState(false);
@@ -356,7 +357,7 @@ function MainAppContent() {
 function App() {
   return (
     <WorkspaceProvider>
-      <MainAppContent />
+      <AppRoutes />
     </WorkspaceProvider>
   );
 }

@@ -273,7 +273,7 @@ export const PdfViewer = () => {
           width: `${800 * zoom}px`,
           height: `${1050 * zoom}px`,
           margin: '0 auto 24px auto',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+          boxShadow: '0 10px 30px rgba(16, 24, 40, 0.12)',
           borderRadius: 'var(--radius-sm)',
           overflow: 'hidden',
           backgroundColor: '#ffffff',
@@ -341,7 +341,7 @@ export const PdfViewer = () => {
           padding: '12px 24px',
           borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
           borderBottom: '1px solid var(--border-glass)',
-          background: 'rgba(15, 23, 42, 0.4)',
+          background: 'var(--bg-panel)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -376,7 +376,7 @@ export const PdfViewer = () => {
               style={{
                 padding: '6px 10px',
                 background: 'var(--bg-surface)',
-                color: 'white'
+                color: 'var(--text-primary)'
               }}
               title="Select Area"
             >
@@ -432,7 +432,7 @@ export const PdfViewer = () => {
           flex: 1,
           overflowY: 'auto',
           padding: '24px 16px',
-          background: 'var(--bg-primary)',
+          background: '#eef1f5',
           borderRadius: '0 0 var(--radius-md) var(--radius-md)',
           border: '1px solid var(--border-glass)',
           borderTop: 'none',
