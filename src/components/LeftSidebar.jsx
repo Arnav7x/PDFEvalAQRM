@@ -14,7 +14,10 @@ export const LeftSidebar = () => {
     setSelectedPaper,
     createPaper,
     deletePaper,
-    setMode
+    setMode,
+    setOverlayTool,
+    setHighlightedRegionId,
+    setCurrentPage
   } = useWorkspace();
 
   const [showNewTplModal, setShowNewTplModal] = useState(false);
@@ -52,6 +55,9 @@ export const LeftSidebar = () => {
         setSelectedPaper(existing);
         setSelectedTemplate(null);
         setMode('grading');
+        setOverlayTool('select');
+        setHighlightedRegionId(null);
+        setCurrentPage(1);
       }
       return;
     }
@@ -164,6 +170,9 @@ export const LeftSidebar = () => {
                   setSelectedTemplate(tpl);
                   setSelectedPaper(null);
                   setMode('mapping');
+                  setOverlayTool('select');
+                  setHighlightedRegionId(null);
+                  setCurrentPage(1);
                 }}
                 className={`glass-panel-hover`}
                 style={{
@@ -253,7 +262,11 @@ export const LeftSidebar = () => {
                   onClick={() => {
                     setSelectedPaper(paper);
                     setSelectedTemplate(null);
-                    setMode('grading');
+                    // Use grading mode if regions exist, otherwise mapping mode
+                    setMode(paperRegions.length > 0 ? 'grading' : 'mapping');
+                    setOverlayTool('select');
+                    setHighlightedRegionId(null);
+                    setCurrentPage(1);
                   }}
                   className="glass-panel-hover"
                   style={{
@@ -300,6 +313,9 @@ export const LeftSidebar = () => {
           onClick={() => {
             setSelectedPaper(null);
             setSelectedTemplate(null);
+            setOverlayTool('select');
+            setHighlightedRegionId(null);
+            setCurrentPage(1);
           }} 
           className="btn-secondary" 
           style={{ width: '100%', justifyContent: 'center', fontSize: '11px', padding: '6px', borderRadius: 'var(--radius-sm)' }}

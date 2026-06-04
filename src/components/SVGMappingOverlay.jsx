@@ -1,55 +1,73 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
-import { X, Check } from 'lucide-react';
 
 export const SVGMappingOverlay = ({ pageNumber }) => {
   const {
     selectedTemplate,
     selectedPaper,
-    addRegion,
     removeRegion,
     highlightedRegionId,
     setHighlightedRegionId,
+    selectedArea,
+    setSelectedArea,
     mode
   } = useWorkspace();
+
+  // Enable drawing when: editing a template, or in mapping mode (for papers)
+  const canMarkArea = !!selectedTemplate || mode === 'mapping';
 
   const containerRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [dragStart, setDragStart] = useState(null);
   const [tempBox, setTempBox] = useState(null);
-  const [showNamingModal, setShowNamingModal] = useState(null);
-  const [questionName, setQuestionName] = useState('');
 
-  // Fetch active regions for this page
   const activeRegions = selectedTemplate
-    ? selectedTemplate.regions.filter(r => r.page === pageNumber)
+    ? selectedTemplate.regions.filter((region) => region.page === pageNumber)
     : selectedPaper
-    ? selectedPaper.regions.filter(r => r.page === pageNumber)
-    : [];
+      ? (selectedPaper.regions || []).filter((region) => region.page === pageNumber)
+      : [];
+
+  const findRegionElement = (target) => {
+    let current = target;
+    while (current && current !== containerRef.current) {
+      if (current.dataset?.regionId) {
+        return current;
+      }
+      current = current.parentElement;
+    }
+    return null;
+  };
 
   const handleMouseDown = (e) => {
-    // If modal is showing, clicking outside should dismiss it
-    if (showNamingModal) {
-      setShowNamingModal(null);
+    const clickedRegion = findRegionElement(e.target);
+    if (clickedRegion) {
+      setHighlightedRegionId(clickedRegion.dataset.regionId);
+      setSelectedArea(null);
       return;
     }
 
-    if (!containerRef.current) return;
+    if (!canMarkArea || !containerRef.current) {
+      setHighlightedRegionId(null);
+      return;
+    }
+
     const rect = containerRef.current.getBoundingClientRect();
-    
-    // Calculate client offset
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
     setIsDrawing(true);
     setDragStart({ x, y });
     setTempBox({ x, y, w: 0, h: 0 });
+    setHighlightedRegionId(null);
+    setSelectedArea(null);
   };
 
   const handleMouseMove = (e) => {
-    if (!isDrawing || !dragStart || !tempBox || !containerRef.current) return;
+    if (!isDrawing || !dragStart || !tempBox || !containerRef.current) {
+      return;
+    }
+
     const rect = containerRef.current.getBoundingClientRect();
-    
     const currentX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
     const currentY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
 
@@ -62,91 +80,30 @@ export const SVGMappingOverlay = ({ pageNumber }) => {
   };
 
   const handleMouseUp = () => {
-    if (!isDrawing || !tempBox || !containerRef.current) return;
+    if (!isDrawing || !tempBox || !containerRef.current) {
+      return;
+    }
+
     setIsDrawing(false);
     setDragStart(null);
 
     const { x, y, w, h } = tempBox;
     const rect = containerRef.current.getBoundingClientRect();
 
-    // Ignore tiny accidental clicks (less than 15px)
     if (w < 15 || h < 15) {
       setTempBox(null);
       return;
     }
 
-    // Convert pixels to percentages
-    const pctX = (x / rect.width) * 100;
-    const pctYCorrected = (y / rect.height) * 100;
-    const pctW = (w / rect.width) * 100;
-    const pctH = (h / rect.height) * 100;
-
-    // Place naming popup near the bottom-right of the selection box
-    const modalLeft = Math.min(x + w, rect.width - 240);
-    const modalTop = Math.min(y + h + 10, rect.height - 80);
-
-    // Auto-suggest next question number
-    const maxQNum = activeRegions.length + 1;
-    setQuestionName(`Q${maxQNum}`);
-
-    setShowNamingModal({
-      left: modalLeft,
-      top: modalTop,
-      pctX,
-      pctY: pctYCorrected,
-      pctW,
-      pctH
-    });
-  };
-
-  const handleSaveRegion = () => {
-    if (!showNamingModal || !questionName.trim()) return;
-
-    // Apply the "Buffer Box" strategy: add 5% padding to width and height and center it
-    const originalWidth = showNamingModal.pctW;
-    const originalHeight = showNamingModal.pctH;
-    const originalX = showNamingModal.pctX;
-    const originalY = showNamingModal.pctY;
-
-    const bufferedWidth = Math.min(100, originalWidth + 5);
-    const bufferedHeight = Math.min(100, originalHeight + 5);
-    
-    // Shift X and Y to keep the box centered
-    const changeX = bufferedWidth - originalWidth;
-    const changeY = bufferedHeight - originalHeight;
-
-    const bufferedX = Math.max(0, originalX - (changeX / 2));
-    const bufferedY = Math.max(0, originalY - (changeY / 2));
-
-    addRegion({
-      questionNumber: questionName.trim(),
+    setSelectedArea({
       page: pageNumber,
-      x: bufferedX,
-      y: bufferedY,
-      width: bufferedWidth,
-      height: bufferedHeight
+      x: (x / rect.width) * 100,
+      y: (y / rect.height) * 100,
+      width: (w / rect.width) * 100,
+      height: (h / rect.height) * 100
     });
-
-    setShowNamingModal(null);
-    setTempBox(null);
-    setQuestionName('');
-  };
-
-  const handleCancelRegion = () => {
-    setShowNamingModal(null);
     setTempBox(null);
   };
-
-  // Listen for escape key to cancel naming modal
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        handleCancelRegion();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   return (
     <svg
@@ -160,26 +117,30 @@ export const SVGMappingOverlay = ({ pageNumber }) => {
         left: 0,
         width: '100%',
         height: '100%',
-        cursor: 'crosshair',
+        cursor: canMarkArea ? 'crosshair' : 'default',
+        pointerEvents: canMarkArea ? 'auto' : 'none',
         userSelect: 'none',
         zIndex: 10
       }}
     >
-      {/* Existing regions overlaid as interactive SVG elements */}
       {activeRegions.map((region) => {
         const isHighlighted = highlightedRegionId === region.id;
-        
+
         return (
           <g
             key={region.id}
+            data-region-id={region.id}
+            pointerEvents="all"
             onClick={(e) => {
               e.stopPropagation();
               setHighlightedRegionId(region.id);
+              setSelectedArea(null);
             }}
             className={`region-box ${isHighlighted ? 'highlight-active' : ''}`}
           >
-            {/* Region rectangle */}
             <rect
+              data-region-id={region.id}
+              pointerEvents="all"
               x={`${region.x}%`}
               y={`${region.y}%`}
               width={`${region.width}%`}
@@ -191,22 +152,21 @@ export const SVGMappingOverlay = ({ pageNumber }) => {
               rx="2"
               ry="2"
             />
-            
-            {/* Tag Badge */}
             <text
+              data-region-id={region.id}
+              pointerEvents="all"
               x={`${region.x}%`}
               y={`${Math.max(0, region.y - 5)}%`}
               fontSize="11"
               fontWeight="bold"
               fill="var(--text-primary)"
-              pointerEvents="none"
             >
               {region.questionNumber}
             </text>
-            
-            {/* Delete button (only show in template/mapping editing mode) */}
             {(mode === 'mapping' || selectedTemplate) && (
               <g
+                data-region-id={region.id}
+                pointerEvents="all"
                 transform={`translate(${parseFloat(region.x) + parseFloat(region.width)}%, ${region.y}%) scale(0.08)`}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -222,80 +182,36 @@ export const SVGMappingOverlay = ({ pageNumber }) => {
         );
       })}
 
-      {/* Draw feedback box */}
       {tempBox && (
         <rect
           x={`${tempBox.x}px`}
           y={`${tempBox.y}px`}
           width={`${tempBox.w}px`}
           height={`${tempBox.h}px`}
-          stroke="var(--accent)"
-          strokeWidth="1"
-          strokeDasharray="2 2"
-          fill="rgba(255, 255, 255, 0.04)"
+          stroke="var(--emerald)"
+          strokeWidth="1.5"
+          strokeDasharray="6 4"
+          fill="rgba(16, 185, 129, 0.08)"
           rx="2"
           ry="2"
           pointerEvents="none"
         />
       )}
 
-      {/* Inline Naming Dialog */}
-      {showNamingModal && (
-        <foreignObject
-          x={`${showNamingModal.left}px`}
-          y={`${showNamingModal.top}px`}
-          width="220"
-          height="auto"
-          style={{
-            zIndex: 30,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-            border: '1px solid var(--border-glass)'
-          }}
-        >
-          <div xmlns="http://www.w3.org/1999/xhtml" style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-            Map Region To Question:
-          </div>
-          <div xmlns="http://www.w3.org/1999/xhtml" style={{ display: 'flex', gap: '6px' }}>
-            <input
-              type="text"
-              value={questionName}
-              onChange={(e) => setQuestionName(e.target.value)}
-              placeholder="e.g. Q1"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSaveRegion();
-              }}
-              style={{
-                flex: 1,
-                fontSize: '13px',
-                padding: '6px 8px',
-                border: '1px solid var(--border-glass)',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'var(--bg-surface)',
-                color: 'var(--text-primary)'
-              }}
-            />
-            <button
-              onClick={handleSaveRegion}
-              className="btn-primary"
-              style={{ padding: '6px 10px' }}
-            >
-              <Check size={14} />
-            </button>
-            <button
-              onClick={handleCancelRegion}
-              className="btn-secondary"
-              style={{ padding: '6px 10px' }}
-            >
-              <X size={14} />
-            </button>
-          </div>
-        </foreignObject>
+      {selectedArea && selectedArea.page === pageNumber && (
+        <rect
+          x={`${selectedArea.x}%`}
+          y={`${selectedArea.y}%`}
+          width={`${selectedArea.width}%`}
+          height={`${selectedArea.height}%`}
+          stroke="var(--emerald)"
+          strokeWidth="2"
+          strokeDasharray="6 4"
+          fill="rgba(16, 185, 129, 0.08)"
+          rx="2"
+          ry="2"
+          pointerEvents="none"
+        />
       )}
     </svg>
   );
