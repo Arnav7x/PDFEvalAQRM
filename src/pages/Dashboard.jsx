@@ -5,7 +5,7 @@ import { useWorkspace } from '../context/WorkspaceContext';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { templates, papers, isLoading, selectPaperForRoute, deletePaper } = useWorkspace();
+  const { templates, papers, isLoading, selectPaperForRoute, deletePaper, deleteTemplate } = useWorkspace();
 
   const openPaper = (paper) => {
     selectPaperForRoute(paper.id, (paper.regions || []).length > 0 ? 'grading' : 'mapping');
@@ -52,9 +52,20 @@ export default function Dashboard() {
                 <p className="mb-3 text-xs text-secondary">
                   {template.pageCount} pages | {(template.regions || []).length} questions
                 </p>
-                <button onClick={() => navigate('/templates')} className="btn btn-secondary w-full justify-center py-1 text-xs">
-                  Preview Template
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => navigate('/templates')} className="btn btn-secondary flex-1 justify-center py-1 text-xs">
+                    Preview Template
+                  </button>
+                  {template.id !== 'tpl-math-101' && template.id !== 'tpl-physics-12' && (
+                    <button
+                      onClick={() => deleteTemplate(template.id)}
+                      className="btn btn-ghost px-2 py-1 text-xs text-red-500 hover:bg-red-50"
+                      title="Delete Template"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
               </article>
             ))}
           </div>

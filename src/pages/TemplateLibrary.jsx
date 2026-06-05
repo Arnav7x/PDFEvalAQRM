@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, Plus, Search } from 'lucide-react';
+import { ArrowLeft, FileText, Plus, Search, Trash2 } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
 
 export default function TemplateLibrary() {
   const navigate = useNavigate();
-  const { templates, papers, selectedPaper, applyTemplateToPaper, setSelectedTemplate, setSelectedPaper, setMode, resetWorkspaceSelection } = useWorkspace();
+  const { templates, papers, selectedPaper, applyTemplateToPaper, setSelectedTemplate, setSelectedPaper, setMode, resetWorkspaceSelection, deleteTemplate } = useWorkspace();
 
   const previewTemplate = (template) => {
     setSelectedTemplate(template);
@@ -71,6 +71,15 @@ export default function TemplateLibrary() {
             <div className="flex gap-2">
               <button onClick={() => applyToLatestPaper(template)} className="btn btn-primary flex-1 justify-center py-1 text-xs">Apply</button>
               <button onClick={() => previewTemplate(template)} className="btn btn-secondary px-4 py-1 text-xs">Preview</button>
+              {template.id !== 'tpl-math-101' && template.id !== 'tpl-physics-12' && (
+                <button
+                  onClick={() => deleteTemplate(template.id)}
+                  className="btn btn-ghost px-3 py-1 text-xs text-red-500 hover:bg-red-50"
+                  title="Delete Template"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
             </div>
           </article>
         ))}

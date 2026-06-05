@@ -210,9 +210,15 @@ export const WorkspaceProvider = ({ children }) => {
       };
       handleUpdateTemplate(updated);
     } else if (selectedPaper) {
+      const regionToRemove = (selectedPaper.regions || []).find((region) => region.id === id);
+      const updatedGrades = { ...(selectedPaper.grades || {}) };
+      if (regionToRemove?.questionNumber) {
+        delete updatedGrades[regionToRemove.questionNumber];
+      }
       const updated = {
         ...selectedPaper,
-        regions: (selectedPaper.regions || []).filter(r => r.id !== id)
+        regions: (selectedPaper.regions || []).filter(r => r.id !== id),
+        grades: updatedGrades
       };
       handleUpdatePaper(updated);
     }
@@ -292,6 +298,16 @@ export const WorkspaceProvider = ({ children }) => {
     handleUpdatePaper(updated);
   };
 
+  const saveGrades = async (grades) => {
+    if (!selectedPaper) return null;
+    const updated = {
+      ...selectedPaper,
+      grades
+    };
+    await handleUpdatePaper(updated);
+    return updated;
+  };
+
   return (
     <WorkspaceContext.Provider
       value={{
@@ -326,6 +342,7 @@ export const WorkspaceProvider = ({ children }) => {
         applyTemplateToPaper,
         updateOffset,
         saveGrade,
+        saveGrades,
         toast,
         triggerToast,
         clearToast,

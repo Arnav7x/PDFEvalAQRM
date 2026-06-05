@@ -1,25 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
 
+const normalizeGrades = (grades = {}) => Object.entries(grades).reduce((acc, [qNum, grade]) => {
+  acc[qNum] = {
+    score: Number(grade?.score) || 0,
+    feedback: grade?.feedback || ''
+  };
+  return acc;
+}, {});
+
 export default function MarksPanel() {
-  const { selectedPaper, highlightedRegionId, setHighlightedRegionId, saveGrade } = useWorkspace();
+  const { selectedPaper, highlightedRegionId, setHighlightedRegionId, saveGrades } = useWorkspace();
   const [localGrades, setLocalGrades] = useState({});
+  const [lastSavedAt, setLastSavedAt] = useState(null);
 
   useEffect(() => {
     setLocalGrades(selectedPaper?.grades || {});
+    setLastSavedAt(null);
   }, [selectedPaper?.id, selectedPaper?.grades]);
+
+  useEffect(() => {
+    if (!selectedPaper) return undefined;
+
+    const normalizedLocalGrades = normalizeGrades(localGrades);
+    const normalizedSavedGrades = normalizeGrades(selectedPaper.grades || {});
+
+    if (JSON.stringify(normalizedLocalGrades) === JSON.stringify(normalizedSavedGrades)) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(async () => {
+      await saveGrades(normalizedLocalGrades);
+      setLastSavedAt(new Date());
+    }, 400);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [localGrades, saveGrades, selectedPaper]);
 
   const handleGradeChange = (qNum, key, value) => {
     setLocalGrades((current) => ({
       ...current,
       [qNum]: { ...(current[qNum] || {}), [key]: value },
     }));
-  };
-
-  const handleSave = () => {
-    Object.keys(localGrades).forEach((qNum) => {
-      saveGrade(qNum, Number(localGrades[qNum].score) || 0, localGrades[qNum].feedback || '');
-    });
   };
 
   const questions = [...(selectedPaper?.regions || [])].sort((a, b) => {
@@ -70,11 +92,13 @@ export default function MarksPanel() {
       </div>
 
       <div className="mt-4 border-t border-glass pt-4">
+        <p className="mb-2 text-center text-[11px] text-secondary">
+          {lastSavedAt
+            ? `Changes auto-saved at ${lastSavedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
+            : 'Changes save automatically'}
+        </p>
         <button className="btn btn-secondary mb-2 w-full justify-center text-xs" onClick={() => setHighlightedRegionId(null)}>
           Clear Selection
-        </button>
-        <button className="btn btn-primary w-full justify-center text-xs" onClick={handleSave}>
-          Submit Evaluation
         </button>
       </div>
     </div>

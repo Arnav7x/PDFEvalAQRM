@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { convertPixelToPercent, normalizeRegionBounds } from '../utils/coordinateUtils';
 
 export const SVGMappingOverlay = ({ pageNumber }) => {
   const {
@@ -95,13 +96,13 @@ export const SVGMappingOverlay = ({ pageNumber }) => {
       return;
     }
 
-    setSelectedArea({
+    setSelectedArea(normalizeRegionBounds({
       page: pageNumber,
-      x: (x / rect.width) * 100,
-      y: (y / rect.height) * 100,
-      width: (w / rect.width) * 100,
-      height: (h / rect.height) * 100
-    });
+      x: convertPixelToPercent(x, rect.width),
+      y: convertPixelToPercent(y, rect.height),
+      width: convertPixelToPercent(w, rect.width),
+      height: convertPixelToPercent(h, rect.height)
+    }));
     setTempBox(null);
   };
 

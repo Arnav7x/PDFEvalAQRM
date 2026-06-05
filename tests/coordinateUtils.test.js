@@ -5,11 +5,11 @@
 
 // Mock the coordinate conversion functions that would be used in the application
 const convertPixelToPercent = (pixelValue, containerSize) => {
-  return (pixelValue / containerSize) * 100;
+  return Math.round(((pixelValue / containerSize) * 100) * 100) / 100;
 };
 
 const convertPercentToPixel = (percentValue, containerSize) => {
-  return (percentValue / 100) * containerSize;
+  return Math.round((percentValue / 100) * containerSize);
 };
 
 const applyBufferBox = (x, y, width, height, bufferPercent = 5) => {
@@ -19,8 +19,8 @@ const applyBufferBox = (x, y, width, height, bufferPercent = 5) => {
   const changeX = bufferedWidth - width;
   const changeY = bufferedHeight - height;
   
-  const bufferedX = Math.max(0, x - (changeX / 2));
-  const bufferedY = Math.max(0, y - (changeY / 2));
+  const bufferedX = Math.max(0, Math.min(100 - bufferedWidth, x - (changeX / 2)));
+  const bufferedY = Math.max(0, Math.min(100 - bufferedHeight, y - (changeY / 2)));
   
   return {
     x: bufferedX,
@@ -60,13 +60,12 @@ describe('Coordinate Conversion Utilities', () => {
     // Box near edge: x=95, y=90, width=10, height=10
     const result = applyBufferBox(95, 90, 10, 10);
     
-    // Width should be capped at 100%
-    expect(result.width).toBe(100); // Capped from 15
+    // Size still grows by the buffer, but the position is clamped to keep the box on-page.
+    expect(result.width).toBe(15);
     expect(result.height).toBe(15); // 10 + 5
-    // X should be adjusted to keep within bounds
-    expect(result.x).toBe(50); // Centered within 100% width
-    // Y should be adjusted similarly
-    expect(result.y).toBe(82.5); // 90 - (5/2) = 87.5, but need to check calculation
+    // X and Y shift left/up so the buffered box still fits within 100%.
+    expect(result.x).toBe(85);
+    expect(result.y).toBe(85);
   });
   
   test('calculates aspect ratio difference correctly', () => {

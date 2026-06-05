@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { X, Check } from 'lucide-react';
+import { applyBufferBox, convertPixelToPercent } from '../utils/coordinateUtils';
 
 export const MappingOverlay = ({ pageNumber }) => {
   const {
@@ -99,10 +100,10 @@ export const MappingOverlay = ({ pageNumber }) => {
     }
 
     // Convert pixels to percentages
-    const pctX = (x / rect.width) * 100;
-    const pctYCorrected = (y / rect.height) * 100;
-    const pctW = (w / rect.width) * 100;
-    const pctH = (h / rect.height) * 100;
+    const pctX = convertPixelToPercent(x, rect.width);
+    const pctYCorrected = convertPixelToPercent(y, rect.height);
+    const pctW = convertPixelToPercent(w, rect.width);
+    const pctH = convertPixelToPercent(h, rect.height);
 
     // Place naming popup near the bottom-right of the selection box
     const modalLeft = Math.min(x + w, rect.width - 240);
@@ -125,29 +126,17 @@ export const MappingOverlay = ({ pageNumber }) => {
   const handleSaveRegion = () => {
     if (!showNamingModal || !questionName.trim()) return;
 
-    // Apply the "Buffer Box" strategy: add 5% padding to width and height and center it
-    const originalWidth = showNamingModal.pctW;
-    const originalHeight = showNamingModal.pctH;
-    const originalX = showNamingModal.pctX;
-    const originalY = showNamingModal.pctY;
-
-    const bufferedWidth = Math.min(100, originalWidth + 5);
-    const bufferedHeight = Math.min(100, originalHeight + 5);
-    
-    // Shift X and Y to keep the box centered
-    const changeX = bufferedWidth - originalWidth;
-    const changeY = bufferedHeight - originalHeight;
-
-    const bufferedX = Math.max(0, originalX - (changeX / 2));
-    const bufferedY = Math.max(0, originalY - (changeY / 2));
+    const bufferedRegion = applyBufferBox(
+      showNamingModal.pctX,
+      showNamingModal.pctY,
+      showNamingModal.pctW,
+      showNamingModal.pctH
+    );
 
     addRegion({
       questionNumber: questionName.trim(),
       page: pageNumber,
-      x: bufferedX,
-      y: bufferedY,
-      width: bufferedWidth,
-      height: bufferedHeight
+      ...bufferedRegion
     });
 
     setShowNamingModal(null);

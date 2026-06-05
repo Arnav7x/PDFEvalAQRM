@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { normalizeRegionBounds } from '../utils/coordinateUtils';
 
 export default function PropertiesPanel() {
   const {
@@ -39,14 +40,14 @@ export default function PropertiesPanel() {
   const updateField = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
   const handleSave = async () => {
-    const nextRegion = {
+    const nextRegion = normalizeRegionBounds({
       questionNumber: form.questionNumber.trim() || `Q${regions.length + 1}`,
       page: Number(form.page) || 1,
       x: Number(form.x) || 0,
       y: Number(form.y) || 0,
       width: Number(form.width) || 0,
       height: Number(form.height) || 0,
-    };
+    });
 
     if (region) {
       const updatedRegions = regions.map((item) => item.id === region.id ? { ...item, ...nextRegion } : item);
