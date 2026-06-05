@@ -12,7 +12,7 @@ It helps an evaluator:
 
 This is not a true automatic grader. The app does not read questions semantically, detect answers on its own, or assign scores automatically. Its main value is speeding up repeated manual marking on consistently structured PDFs.
 
-## What The App Does Well
+## What The App Does
 
 - lets you draw question regions directly on a PDF
 - stores regions as percentage-based boxes so they scale with the page
@@ -23,20 +23,6 @@ This is not a true automatic grader. The app does not read questions semanticall
 - allows per-question marks and feedback
 - auto-saves grading changes in the marks panel
 - supports deleting papers and user-created templates
-
-## What It Does Not Do
-
-- no OCR-based question detection
-- no automatic answer extraction
-- no mark-scheme-driven grading
-- no AI scoring
-- no robust support for arbitrary PDFs with unrelated layouts
-
-In practical terms, this app is best for:
-
-- scanned answer sheets
-- exported answer-booklet PDFs
-- repeated exam formats where question areas stay in roughly the same place
 
 ## How It Works
 
