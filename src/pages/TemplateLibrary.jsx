@@ -12,7 +12,7 @@ export default function TemplateLibrary() {
     setSelectedPaper(null);
     setMode('mapping');
     resetWorkspaceSelection();
-    navigate(`/templates`);
+    navigate(`/templates/${template.id}`);
   };
 
   const applyToLatestPaper = (template) => {

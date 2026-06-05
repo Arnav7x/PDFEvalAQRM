@@ -5,11 +5,19 @@ import { useWorkspace } from '../context/WorkspaceContext';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { templates, papers, isLoading, selectPaperForRoute, deletePaper, deleteTemplate } = useWorkspace();
+  const { templates, papers, isLoading, selectPaperForRoute, deletePaper, deleteTemplate, setSelectedTemplate, setSelectedPaper, setMode, resetWorkspaceSelection } = useWorkspace();
 
   const openPaper = (paper) => {
     selectPaperForRoute(paper.id, (paper.regions || []).length > 0 ? 'grading' : 'mapping');
     navigate((paper.regions || []).length > 0 ? `/evaluate/${paper.id}` : `/workspace/${paper.id}`);
+  };
+
+  const openTemplatePreview = (template) => {
+    setSelectedTemplate(template);
+    setSelectedPaper(null);
+    setMode('mapping');
+    resetWorkspaceSelection();
+    navigate(`/templates/${template.id}`);
   };
 
   return (
@@ -53,7 +61,7 @@ export default function Dashboard() {
                   {template.pageCount} pages | {(template.regions || []).length} questions
                 </p>
                 <div className="flex gap-2">
-                  <button onClick={() => navigate('/templates')} className="btn btn-secondary flex-1 justify-center py-1 text-xs">
+                  <button onClick={() => openTemplatePreview(template)} className="btn btn-secondary flex-1 justify-center py-1 text-xs">
                     Preview Template
                   </button>
                   {template.id !== 'tpl-math-101' && template.id !== 'tpl-physics-12' && (
