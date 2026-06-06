@@ -11,11 +11,12 @@ export const SVGMappingOverlay = ({ pageNumber }) => {
     setHighlightedRegionId,
     selectedArea,
     setSelectedArea,
+    overlayTool,
     mode
   } = useWorkspace();
 
   // Enable drawing when: editing a template, or in mapping mode (for papers)
-  const canMarkArea = !!selectedTemplate || mode === 'mapping';
+  const canMarkArea = (!!selectedTemplate || mode === 'mapping') && overlayTool === 'select';
 
   const containerRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);

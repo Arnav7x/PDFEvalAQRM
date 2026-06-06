@@ -80,7 +80,7 @@ export const RightSidebar = () => {
           <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: '600' }}>
             {selectedRegion ? 'Selected Region' : selectedArea ? 'Selected Area' : 'Selection'}
           </div>
-          <div style={{ fontSize: '15px', fontWeight: '700', color: 'white' }}>
+          <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>
             {selectedRegion?.questionNumber || (selectedArea ? `Page ${selectedArea.page}` : 'None')}
           </div>
         </div>
@@ -219,7 +219,7 @@ export const RightSidebar = () => {
         }}
       >
         <GraduationCap size={48} style={{ color: 'var(--accent)', opacity: 0.8 }} />
-        <h3 style={{ color: 'white', fontSize: '16px', fontWeight: '600' }}>Get Started</h3>
+        <h3 style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: '600' }}>Get Started</h3>
         <p style={{ fontSize: '13px', lineHeight: '1.6' }}>
           Select an existing question template to edit its regions, or click **"Load Demo Math Paper"** in the left sidebar to start grading.
         </p>
@@ -244,7 +244,7 @@ export const RightSidebar = () => {
         }}
       >
         <div>
-          <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'white' }}>{selectedTemplate.name}</h2>
+          <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>{selectedTemplate.name}</h2>
           <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Template Mapping Mode</span>
         </div>
 
@@ -284,7 +284,7 @@ export const RightSidebar = () => {
                       }}
                     >
                       <div>
-                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'white' }}>{region.questionNumber}</span>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{region.questionNumber}</span>
                         <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block' }}>
                           Page {region.page} • Bounds: {Math.round(region.width)}% x {Math.round(region.height)}%
                         </span>
@@ -368,7 +368,7 @@ export const RightSidebar = () => {
     >
       {/* Paper Header */}
       <div>
-        <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'white' }}>{selectedPaper.studentName}</h2>
+        <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' }}>{selectedPaper.studentName}</h2>
         <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>File: {selectedPaper.fileName}</span>
       </div>
 
@@ -415,7 +415,7 @@ export const RightSidebar = () => {
           </p>
           
           {/* Option 1: Apply Template */}
-          <div style={{ fontSize: '11px', fontWeight: '600', color: 'white' }}>Apply Template:</div>
+          <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)' }}>Apply Template:</div>
           <select
             onChange={handleApplyTemplateSelect}
             defaultValue=""
@@ -428,7 +428,7 @@ export const RightSidebar = () => {
           </select>
 
           {/* Option 2: Create Manually */}
-          <div style={{ fontSize: '11px', fontWeight: '600', color: 'white', marginTop: '8px' }}>Or Create Manually:</div>
+          <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)', marginTop: '8px' }}>Or Create Manually:</div>
           <button
             onClick={() => setMode('mapping')}
             className="btn-primary"
@@ -486,7 +486,7 @@ export const RightSidebar = () => {
                       }}
                     >
                       <div>
-                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'white' }}>{region.questionNumber}</span>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{region.questionNumber}</span>
                         <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'block' }}>
                           Page {region.page} • Bounds: {Math.round(region.width)}% x {Math.round(region.height)}%
                         </span>
@@ -668,7 +668,7 @@ export const RightSidebar = () => {
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <ChevronRight size={14} style={{ color: isSelected ? 'var(--accent)' : 'var(--text-muted)' }} />
-                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'white' }}>
+                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>
                             {region.questionNumber}
                           </span>
                           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>(p. {region.page})</span>
@@ -705,7 +705,7 @@ export const RightSidebar = () => {
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'white' }}>Grading: {activeGradeQ}</span>
+                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Grading: {activeGradeQ}</span>
                     <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Region selected</span>
                   </div>
 

@@ -55,7 +55,7 @@ export const LeftSidebar = () => {
         setSelectedPaper(existing);
         setSelectedTemplate(null);
         setMode('grading');
-        setOverlayTool('select');
+        setOverlayTool('pan');
         setHighlightedRegionId(null);
         setCurrentPage(1);
       }
@@ -170,7 +170,7 @@ export const LeftSidebar = () => {
                   setSelectedTemplate(tpl);
                   setSelectedPaper(null);
                   setMode('mapping');
-                  setOverlayTool('select');
+                  setOverlayTool('pan');
                   setHighlightedRegionId(null);
                   setCurrentPage(1);
                 }}
@@ -264,7 +264,7 @@ export const LeftSidebar = () => {
                     setSelectedTemplate(null);
                     // Use grading mode if regions exist, otherwise mapping mode
                     setMode(paperRegions.length > 0 ? 'grading' : 'mapping');
-                    setOverlayTool('select');
+                    setOverlayTool('pan');
                     setHighlightedRegionId(null);
                     setCurrentPage(1);
                   }}
@@ -313,7 +313,7 @@ export const LeftSidebar = () => {
           onClick={() => {
             setSelectedPaper(null);
             setSelectedTemplate(null);
-            setOverlayTool('select');
+            setOverlayTool('pan');
             setHighlightedRegionId(null);
             setCurrentPage(1);
           }} 

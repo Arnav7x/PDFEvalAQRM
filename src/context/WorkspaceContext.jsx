@@ -16,7 +16,7 @@ export const WorkspaceProvider = ({ children }) => {
   const [zoom, setZoom] = useState(1.0);
   const [highlightedRegionId, setHighlightedRegionId] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
-  const [overlayTool, setOverlayTool] = useState('select');
+  const [overlayTool, setOverlayTool] = useState('pan');
 
   // Toast notification state
   const [toast, setToast] = useState(null);
@@ -109,7 +109,7 @@ export const WorkspaceProvider = ({ children }) => {
       setCurrentPage(1);
       setHighlightedRegionId(null);
       setSelectedArea(null);
-      setOverlayTool('select');
+      setOverlayTool('pan');
     }
     return savedTemplate;
   };
@@ -134,7 +134,7 @@ export const WorkspaceProvider = ({ children }) => {
     setCurrentPage(1);
     setHighlightedRegionId(null);
     setSelectedArea(null);
-    setOverlayTool('select');
+    setOverlayTool('pan');
     return savedPaper;
   };
 
@@ -145,7 +145,7 @@ export const WorkspaceProvider = ({ children }) => {
   const resetWorkspaceSelection = () => {
     setHighlightedRegionId(null);
     setSelectedArea(null);
-    setOverlayTool('select');
+    setOverlayTool('pan');
     setCurrentPage(1);
   };
 
@@ -261,7 +261,7 @@ export const WorkspaceProvider = ({ children }) => {
     setSelectedTemplate(null);
     setHighlightedRegionId(copiedRegions[0]?.id || null);
     setSelectedArea(null);
-    setOverlayTool('select');
+    setOverlayTool('pan');
     return updated;
   };
 
