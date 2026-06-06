@@ -6,10 +6,12 @@ import MappingWorkspace from '../pages/MappingWorkspace';
 import TemplateLibrary from '../pages/TemplateLibrary';
 import TemplateWorkspace from '../pages/TemplateWorkspace';
 import EvaluationWorkspace from '../pages/EvaluationWorkspace';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
+      <ThemeToggle />
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/upload" element={<UploadPaper />} />

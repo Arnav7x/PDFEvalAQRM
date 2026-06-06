@@ -19,6 +19,7 @@ export const PdfViewer = () => {
     zoom,
     setZoom,
     highlightedRegionId,
+    overlayTool,
     setOverlayTool
   } = useWorkspace();
 
@@ -371,14 +372,13 @@ export const PdfViewer = () => {
             }}
           >
             <button
-              onClick={() => setOverlayTool('select')}
-              className="btn-secondary"
+              onClick={() => setOverlayTool((current) => current === 'select' ? 'pan' : 'select')}
+              className={overlayTool === 'select' ? 'btn-primary' : 'btn-secondary'}
               style={{
                 padding: '6px 10px',
-                background: 'var(--bg-surface)',
-                color: 'var(--text-primary)'
               }}
-              title="Select Area"
+              title={overlayTool === 'select' ? 'Disable region selection' : 'Select Area'}
+              aria-pressed={overlayTool === 'select'}
             >
               <MousePointer2 size={14} /> Select Region
             </button>
@@ -432,7 +432,7 @@ export const PdfViewer = () => {
           flex: 1,
           overflowY: 'auto',
           padding: '24px 16px',
-          background: '#eef1f5',
+          background: 'var(--bg-secondary)',
           borderRadius: '0 0 var(--radius-md) var(--radius-md)',
           border: '1px solid var(--border-glass)',
           borderTop: 'none',
