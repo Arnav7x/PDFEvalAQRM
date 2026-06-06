@@ -147,12 +147,15 @@ export const SVGMappingOverlay = ({ pageNumber }) => {
               y={`${region.y}%`}
               width={`${region.width}%`}
               height={`${region.height}%`}
-              stroke={isHighlighted ? 'var(--accent)' : 'var(--text-muted)'}
-              strokeWidth={isHighlighted ? '2' : '1'}
+              stroke={isHighlighted ? 'var(--region-selected-stroke)' : 'var(--text-muted)'}
+              strokeWidth={isHighlighted ? '1.5' : '1'}
               strokeDasharray={isHighlighted ? 'none' : '2 2'}
-              fill={isHighlighted ? 'var(--accent-light)' : 'rgba(255, 255, 255, 0.02)'}
+              fill={isHighlighted ? 'var(--region-selected-fill)' : 'rgba(255, 255, 255, 0.02)'}
               rx="2"
               ry="2"
+              style={{
+                filter: isHighlighted ? 'var(--region-selected-glow)' : 'none',
+              }}
             />
             <text
               data-region-id={region.id}
@@ -161,7 +164,7 @@ export const SVGMappingOverlay = ({ pageNumber }) => {
               y={`${Math.max(0, region.y - 5)}%`}
               fontSize="11"
               fontWeight="bold"
-              fill="var(--text-primary)"
+              fill="var(--region-label-fill)"
             >
               {region.questionNumber}
             </text>

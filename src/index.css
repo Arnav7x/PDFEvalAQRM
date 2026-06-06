@@ -33,6 +33,11 @@
   --text-secondary: #667085;
   --text-muted: #98a2b3;
   --text-on-light: #ffffff;
+
+  --region-selected-stroke: rgba(15, 157, 112, 0.5);
+  --region-selected-fill: rgba(16, 185, 129, 0.095);
+  --region-selected-glow: drop-shadow(0 0 8px rgba(16, 185, 129, 0.12));
+  --region-label-fill: #101828;
   
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -67,6 +72,11 @@
   --text-secondary: #b5c0cf;
   --text-muted: #8390a3;
   --text-on-light: #101828;
+
+  --region-selected-stroke: rgba(78, 188, 161, 0.5);
+  --region-selected-fill: rgba(16, 185, 129, 0.18);
+  --region-selected-glow: drop-shadow(0 0 10px rgba(16, 185, 129, 0.16));
+  --region-label-fill: #101828;
 
   color-scheme: dark;
 }
